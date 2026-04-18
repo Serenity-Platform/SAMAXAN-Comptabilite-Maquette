@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent IA — SAMAXAN Comptabilité</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/theme.js"></script>
+  <style>
+    .agent-layout {
+      display: flex;
+      height: 100vh;
+      background: var(--bg-secondary);
+    }
+    
+    .agent-sidebar {
+      width: 280px;
+      background: var(--bg-primary);
+      border-right: 1px solid var(--border-primary);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .agent-header {
+      padding: var(--spacing-6);
+      border-bottom: 1px solid var(--border-primary);
+    }
+    
+    .agent-title {
+      font-size: var(--font-size-lg);
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-2);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+    }
+    
+    .agent-title svg {
+      width: 24px;
+      height: 24px;
+      background: var(--gradient-primary);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      color: white;
+    }
+    
+    .agent-subtitle {
+      font-size: var(--font-size-sm);
+      color: var(--text-tertiary);
+    }
+    
+    .conversations-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--spacing-4);
+    }
+    
+    .conversation-item {
+      padding: var(--spacing-3);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: var(--spacing-2);
+    }
+    
+    .conversation-item:hover {
+      background: var(--bg-secondary);
+    }
+    
+    .conversation-item.active {
+      background: var(--bg-tertiary);
+    }
+    
+    .conversation-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .conversation-date {
+      font-size: var(--font-size-xs);
+      color: var(--text-quaternary);
+    }
+    
+    .agent-footer {
+      padding: var(--spacing-4);
+      border-top: 1px solid var(--border-primary);
+    }
+    
+    .agent-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    .chat-header {
+      padding: var(--spacing-6);
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .chat-title {
+      font-size: var(--font-size-xl);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .chat-actions {
+      display: flex;
+      gap: var(--spacing-2);
+    }
+    
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--spacing-6);
+    }
+    
+    .message {
+      margin-bottom: var(--spacing-6);
+      animation: messageSlideIn 0.3s ease;
+    }
+    
+    @keyframes messageSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-3);
+      margin-bottom: var(--spacing-3);
+    }
+    
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--font-size-sm);
+      flex-shrink: 0;
+    }
+    
+    .message-avatar.user {
+      background: var(--gradient-primary);
+      color: white;
+    }
+    
+    .message-avatar.agent {
+      background: var(--bg-tertiary);
+      color: var(--violet-primary);
+    }
+    
+    .message-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+    }
+    
+    .message-author {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .message-time {
+      font-size: var(--font-size-xs);
+      color: var(--text-quaternary);
+    }
+    
+    .message-content {
+      margin-left: 44px;
+      padding: var(--spacing-4);
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-primary);
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+    
+    .message.user .message-content {
+      background: var(--bg-tertiary);
+    }
+    
+    .tool-call {
+      margin-top: var(--spacing-3);
+      padding: var(--spacing-3);
+      background: rgba(67, 30, 150, 0.05);
+      border-left: 3px solid var(--violet-primary);
+      border-radius: var(--radius-md);
+    }
+    
+    .tool-call-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--violet-primary);
+      margin-bottom: var(--spacing-2);
+    }
+    
+    .tool-call-header svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .tool-call-details {
+      font-size: var(--font-size-xs);
+      color: var(--text-tertiary);
+      font-family: 'Courier New', monospace;
+    }
+    
+    .chat-input-container {
+      padding: var(--spacing-6);
+      background: var(--bg-primary);
+      border-top: 1px solid var(--border-primary);
+    }
+    
+    .chat-input-wrapper {
+      display: flex;
+      gap: var(--spacing-3);
+      align-items: end;
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: var(--spacing-4);
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      color: var(--text-primary);
+      font-size: var(--font-size-sm);
+      resize: none;
+      min-height: 56px;
+      max-height: 200px;
+      transition: all 0.2s ease;
+    }
+    
+    .chat-input:focus {
+      border-color: var(--violet-primary);
+      background: var(--bg-primary);
+      outline: none;
+    }
+    
+    .send-button {
+      width: 56px;
+      height: 56px;
+      background: var(--gradient-primary);
+      border: none;
+      border-radius: var(--radius-lg);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    
+    .send-button:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+    
+    .send-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .send-button svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    .suggestions {
+      display: flex;
+      gap: var(--spacing-2);
+      margin-bottom: var(--spacing-4);
+      flex-wrap: wrap;
+    }
+    
+    .suggestion-chip {
+      padding: var(--spacing-2) var(--spacing-3);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    
+    .suggestion-chip:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--violet-primary);
+      color: var(--violet-primary);
+    }
+    
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      padding: var(--spacing-8);
+    }
+    
+    .empty-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      margin-bottom: var(--spacing-6);
+    }
+    
+    .empty-icon svg {
+      width: 48px;
+      height: 48px;
+    }
+    
+    .empty-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-2);
+    }
+    
+    .empty-description {
+      font-size: var(--font-size-base);
+      color: var(--text-tertiary);
+      margin-bottom: var(--spacing-6);
+      max-width: 480px;
+    }
+    
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: var(--spacing-2);
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--text-quaternary);
+      border-radius: var(--radius-full);
+      animation: typingBounce 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes typingBounce {
+      0%, 60%, 100% {
+        transform: translateY(0);
+      }
+      30% {
+        transform: translateY(-8px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="agent-layout">
+    <!-- Sidebar conversations -->
+    <aside class="agent-sidebar">
+      <div class="agent-header">
+        <h1 class="agent-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+          </svg>
+          Agent Compta
+        </h1>
+        <p class="agent-subtitle">IA experte comptable & fiscale</p>
+      </div>
+      
+      <div class="conversations-list">
+        <div class="conversation-item active">
+          <div class="conversation-title">Nouvelle conversation</div>
+          <div class="conversation-date">Maintenant</div>
+        </div>
+        
+        <div class="conversation-item">
+          <div class="conversation-title">Catégorisation transactions mars</div>
+          <div class="conversation-date">Il y a 2h</div>
+        </div>
+        
+        <div class="conversation-item">
+          <div class="conversation-title">Génération facture TechSolutions</div>
+          <div class="conversation-date">Hier</div>
+        </div>
+        
+        <div class="conversation-item">
+          <div class="conversation-title">Audit fiscal 2025</div>
+          <div class="conversation-date">15 avril</div>
+        </div>
+        
+        <div class="conversation-item">
+          <div class="conversation-title">Clôture annuelle Q&A</div>
+          <div class="conversation-date">12 avril</div>
+        </div>
+      </div>
+      
+      <div class="agent-footer">
+        <button class="btn btn-primary" style="width: 100%; justify-content: center;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px; margin-right: 8px;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Nouvelle conversation
+        </button>
+      </div>
+    </aside>
+    
+    <!-- Main chat -->
+    <main class="agent-main">
+      <div class="chat-header">
+        <h2 class="chat-title">Agent Comptable IA</h2>
+        <div class="chat-actions">
+          <button class="btn btn-ghost btn-sm" onclick="window.location.href='dashboard.html'">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="chat-messages" id="messages">
+        <!-- Empty state -->
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+          </div>
+          <h3 class="empty-title">Bonjour Samy !</h3>
+          <p class="empty-description">
+            Je suis votre expert-comptable IA. Je peux catégoriser vos transactions, générer des factures Factur-X, simuler des contrôles fiscaux et bien plus.
+          </p>
+          
+          <div class="suggestions">
+            <div class="suggestion-chip" onclick="sendSuggestion('Catégorise mes transactions Revolut de mars')">
+              Catégoriser transactions
+            </div>
+            <div class="suggestion-chip" onclick="sendSuggestion('Génère une facture pour TechSolutions, Pack Expert 699€ HT')">
+              Générer facture
+            </div>
+            <div class="suggestion-chip" onclick="sendSuggestion('Simule un contrôle fiscal sur 2025')">
+              Audit fiscal
+            </div>
+            <div class="suggestion-chip" onclick="sendSuggestion('Prépare ma clôture annuelle 2025')">
+              Clôture annuelle
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="chat-input-container">
+        <div class="chat-input-wrapper">
+          <textarea 
+            id="chat-input" 
+            class="chat-input" 
+            placeholder="Posez une question comptable ou fiscale..."
+            rows="1"
+          ></textarea>
+          <button class="send-button" id="send-button" onclick="sendMessage()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const messagesContainer = document.getElementById('messages');
+    const emptyState = document.getElementById('empty-state');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+    
+    let messageCount = 0;
+    
+    // Auto-resize textarea
+    chatInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight) + 'px';
+    });
+    
+    // Send on Enter (Shift+Enter = newline)
+    chatInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    
+    function sendSuggestion(text) {
+      chatInput.value = text;
+      sendMessage();
+    }
+    
+    function sendMessage() {
+      const message = chatInput.value.trim();
+      if (!message) return;
+      
+      // Hide empty state
+      if (emptyState) {
+        emptyState.style.display = 'none';
+      }
+      
+      // Add user message
+      addMessage('user', message);
+      
+      // Clear input
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+      
+      // Disable send button
+      sendButton.disabled = true;
+      
+      // Show typing indicator
+      setTimeout(() => {
+        addTypingIndicator();
+        
+        // Simulate AI response
+        setTimeout(() => {
+          removeTypingIndicator();
+          addAgentResponse(message);
+          sendButton.disabled = false;
+        }, 2000);
+      }, 500);
+    }
+    
+    function addMessage(type, content) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type}`;
+      
+      const now = new Date();
+      const time = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      
+      messageDiv.innerHTML = `
+        <div class="message-header">
+          <div class="message-avatar ${type}">
+            ${type === 'user' ? 'SH' : 'IA'}
+          </div>
+          <div class="message-meta">
+            <span class="message-author">${type === 'user' ? 'Vous' : 'Agent Compta'}</span>
+            <span class="message-time">${time}</span>
+          </div>
+        </div>
+        <div class="message-content">${content}</div>
+      `;
+      
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function addAgentResponse(userMessage) {
+      let response = '';
+      let toolCall = null;
+      
+      // Simulate intelligent responses based on keywords
+      if (userMessage.toLowerCase().includes('catégor') || userMessage.toLowerCase().includes('transaction')) {
+        response = "J'ai analysé vos transactions Revolut de mars. J'ai identifié 42 transactions à catégoriser. Voici ma proposition :";
+        toolCall = {
+          name: 'categorize_transactions',
+          input: { month: 'mars', bank: 'revolut', count: 42 }
+        };
+      } else if (userMessage.toLowerCase().includes('facture')) {
+        response = "Je vais générer la facture F-2026-042 pour TechSolutions au format Factur-X (PDF + XML CII). Voici les détails :";
+        toolCall = {
+          name: 'create_invoice_facturx',
+          input: { client: 'TechSolutions', amount_ht: 699, product: 'Pack Expert' }
+        };
+      } else if (userMessage.toLowerCase().includes('audit') || userMessage.toLowerCase().includes('contrôle')) {
+        response = "J'ai simulé un contrôle fiscal DGFIP sur votre exercice 2025. Voici les 8 axes d'analyse :";
+        toolCall = {
+          name: 'run_fiscal_audit',
+          input: { year: 2025, axes: 8 }
+        };
+      } else if (userMessage.toLowerCase().includes('clôture')) {
+        response = "Je vais vous guider dans la clôture annuelle 2025. Workflow en 12 étapes :";
+        toolCall = {
+          name: 'close_fiscal_year',
+          input: { year: 2025, steps: 12 }
+        };
+      } else {
+        response = "Je suis votre expert-comptable IA spécialisé dans la comptabilité française. Je peux vous aider avec les écritures, la facturation Factur-X, les déclarations fiscales (TVA CA3/CA12, IS 2065), la liasse fiscale 2033/2050, et l'audit de conformité. Que souhaitez-vous faire ?";
+      }
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message agent';
+      
+      const now = new Date();
+      const time = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      
+      let toolCallHtml = '';
+      if (toolCall) {
+        toolCallHtml = `
+          <div class="tool-call">
+            <div class="tool-call-header">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              Tool: ${toolCall.name}
+            </div>
+            <div class="tool-call-details">${JSON.stringify(toolCall.input, null, 2)}</div>
+          </div>
+        `;
+      }
+      
+      messageDiv.innerHTML = `
+        <div class="message-header">
+          <div class="message-avatar agent">IA</div>
+          <div class="message-meta">
+            <span class="message-author">Agent Compta</span>
+            <span class="message-time">${time}</span>
+          </div>
+        </div>
+        <div class="message-content">
+          ${response}
+          ${toolCallHtml}
+        </div>
+      `;
+      
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function addTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.id = 'typing-indicator';
+      typingDiv.className = 'message agent';
+      
+      typingDiv.innerHTML = `
+        <div class="message-header">
+          <div class="message-avatar agent">IA</div>
+          <div class="message-meta">
+            <span class="message-author">Agent Compta</span>
+            <span class="message-time">En train d'écrire...</span>
+          </div>
+        </div>
+        <div class="message-content">
+          <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+      `;
+      
+      messagesContainer.appendChild(typingDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+  </script>
+</body>
+</html>
