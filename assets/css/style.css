@@ -234,7 +234,7 @@ body {
 }
 
 .content-header {
-  background: white;
+  background: var(--bg-primary);
   border-bottom: 1px solid var(--gray-200);
   padding: var(--spacing-5) var(--spacing-8);
   position: sticky;
@@ -317,7 +317,7 @@ body {
 }
 
 .btn-secondary {
-  background: white;
+  background: var(--bg-primary);
   color: var(--gray-700);
   border: 1px solid var(--gray-300);
 }
@@ -353,7 +353,7 @@ body {
 
 /* Cards */
 .card {
-  background: white;
+  background: var(--bg-primary);
   border-radius: var(--radius-lg);
   border: 1px solid var(--gray-200);
   padding: var(--spacing-6);
@@ -382,7 +382,7 @@ body {
 }
 
 .kpi-card {
-  background: white;
+  background: var(--bg-primary);
   border-radius: var(--radius-lg);
   padding: var(--spacing-5);
   border: 1px solid var(--gray-200);
@@ -447,7 +447,7 @@ body {
 table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--bg-primary);
 }
 
 thead {
@@ -580,7 +580,7 @@ tr:hover {
 }
 
 .modal {
-  background: white;
+  background: var(--bg-primary);
   border-radius: var(--radius-xl);
   max-width: 600px;
   width: 100%;

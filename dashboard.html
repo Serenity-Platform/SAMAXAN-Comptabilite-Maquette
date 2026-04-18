@@ -724,9 +724,9 @@
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <div style="width: 12px; height: 12px; border-radius: 2px; background: ${d.color};"></div>
-              <span style="font-size: 14px; color: #4B5563;">${d.name}</span>
+              <span style="font-size: 14px; color: var(--text-secondary);">${d.name}</span>
             </div>
-            <span style="font-size: 14px; font-weight: 600; color: #111827;">${percent}%</span>
+            <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">${percent}%</span>
           </div>
         `;
       }).join('');
@@ -735,7 +735,7 @@
         <div style="display: flex; align-items: center; gap: 40px;">
           <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
             ${paths}
-            <text x="${centerX}" y="${centerY - 10}" text-anchor="middle" font-size="24" font-weight="700" fill="#111827">421.6k€</text>
+            <text x="${centerX}" y="${centerY - 10}" text-anchor="middle" font-size="24" font-weight="700" fill="var(--text-primary)">421.6k€</text>
             <text x="${centerX}" y="${centerY + 10}" text-anchor="middle" font-size="12" fill="#6B7280">Charges totales</text>
           </svg>
           <div style="flex: 1;">
