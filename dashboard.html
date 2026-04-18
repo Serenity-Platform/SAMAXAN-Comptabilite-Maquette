@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — SAMAXAN Comptabilité</title>
   <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.0/dist/Recharts.min.js"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -298,6 +299,13 @@
           </div>
           
           <div class="user-menu">
+            <div class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+              <div class="theme-toggle-thumb">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+              </div>
+            </div>
             <div class="user-avatar">SH</div>
             <div style="text-align: right;">
               <div style="font-size: var(--font-size-sm); font-weight: 600; color: var(--gray-900);">Samy H.</div>

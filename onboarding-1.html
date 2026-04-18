@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration — Étape 1/5 — SAMAXAN Comptabilité</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* Onboarding specific styles */
+    body {
+      background: linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%);
+    }
+    
+    .onboarding-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-8);
+    }
+    
+    .onboarding-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+      max-width: 720px;
+      width: 100%;
+      overflow: hidden;
+    }
+    
+    .onboarding-header {
+      background: var(--gradient-primary);
+      padding: var(--spacing-8);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .onboarding-header::before {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      top: -200px;
+      right: -200px;
+    }
+    
+    .onboarding-logo {
+      height: 48px;
+      margin-bottom: var(--spacing-4);
+      filter: brightness(0) invert(1);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .onboarding-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 800;
+      color: white;
+      margin-bottom: var(--spacing-2);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .onboarding-subtitle {
+      font-size: var(--font-size-base);
+      color: rgba(255,255,255,0.9);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: rgba(67, 30, 150, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-primary);
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 20px rgba(67, 30, 150, 0.5);
+    }
+    
+    .onboarding-body {
+      padding: var(--spacing-8);
+    }
+    
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-2);
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .step-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: var(--radius-full);
+      background: var(--gray-200);
+      transition: all 0.3s ease;
+    }
+    
+    .step-dot.active {
+      width: 32px;
+      background: var(--gradient-primary);
+    }
+    
+    .form-section {
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .form-section-title {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: var(--spacing-4);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+    }
+    
+    .form-section-icon {
+      width: 24px;
+      height: 24px;
+      padding: 4px;
+      background: var(--violet-light);
+      border-radius: var(--radius-md);
+      color: var(--violet-primary);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-4);
+    }
+    
+    .search-group {
+      position: relative;
+    }
+    
+    .search-icon {
+      position: absolute;
+      right: var(--spacing-3);
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      color: var(--gray-400);
+      pointer-events: none;
+    }
+    
+    .search-button {
+      position: absolute;
+      right: var(--spacing-2);
+      top: 50%;
+      transform: translateY(-50%);
+      padding: var(--spacing-2) var(--spacing-3);
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .search-button:hover {
+      opacity: 0.9;
+      transform: translateY(-50%) scale(1.05);
+    }
+    
+    .success-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      padding: var(--spacing-3);
+      background: #D1FAE5;
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-4);
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .success-indicator svg {
+      width: 20px;
+      height: 20px;
+      color: var(--success);
+    }
+    
+    .success-indicator span {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: #059669;
+    }
+    
+    .onboarding-footer {
+      padding: var(--spacing-6) var(--spacing-8);
+      background: var(--gray-50);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--gray-200);
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: var(--spacing-3);
+    }
+    
+    .tooltip {
+      position: relative;
+      cursor: help;
+    }
+    
+    .tooltip-icon {
+      width: 16px;
+      height: 16px;
+      color: var(--gray-400);
+      transition: color 0.2s ease;
+    }
+    
+    .tooltip:hover .tooltip-icon {
+      color: var(--violet-primary);
+    }
+    
+    .form-input:focus,
+    .form-select:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 3px rgba(67, 30, 150, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .form-input:disabled,
+    .form-select:disabled {
+      background: var(--gray-50);
+      cursor: not-allowed;
+    }
+    
+    @media (max-width: 640px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .onboarding-body {
+        padding: var(--spacing-6);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="onboarding-container">
+    <div class="onboarding-card">
+      <div class="onboarding-header">
+        <img src="assets/img/logo-samaxan-baseline.svg" alt="SAMAXAN" class="onboarding-logo">
+        <h1 class="onboarding-title">Bienvenue sur SAMAXAN Comptabilité</h1>
+        <p class="onboarding-subtitle">Configurons votre espace en quelques étapes</p>
+      </div>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 20%;"></div>
+      </div>
+      
+      <div class="onboarding-body">
+        <div class="step-indicator">
+          <div class="step-dot active"></div>
+          <div class="step-dot"></div>
+          <div class="step-dot"></div>
+          <div class="step-dot"></div>
+          <div class="step-dot"></div>
+        </div>
+        
+        <form id="onboarding-form">
+          <!-- Section: Recherche SIREN -->
+          <div class="form-section">
+            <h2 class="form-section-title">
+              <svg class="form-section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              Recherche automatique
+            </h2>
+            
+            <div class="form-group">
+              <label class="form-label" for="siren">
+                Numéro SIREN
+                <span class="tooltip">
+                  <svg class="tooltip-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </span>
+              </label>
+              <div class="search-group">
+                <input 
+                  type="text" 
+                  id="siren" 
+                  class="form-input" 
+                  placeholder="851264606"
+                  value="851264606"
+                  maxlength="9"
+                  style="padding-right: 120px;"
+                >
+                <button type="button" class="search-button" onclick="searchSiren()">
+                  Rechercher
+                </button>
+              </div>
+              <small style="font-size: var(--font-size-xs); color: var(--gray-500); margin-top: 4px; display: block;">
+                Nous allons récupérer automatiquement les informations depuis la base Pappers
+              </small>
+            </div>
+            
+            <div id="success-message" class="success-indicator" style="display: none;">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>Données récupérées automatiquement depuis Pappers</span>
+            </div>
+          </div>
+          
+          <!-- Section: Identité légale -->
+          <div class="form-section">
+            <h2 class="form-section-title">
+              <svg class="form-section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+              Identité légale
+            </h2>
+            
+            <div class="form-group">
+              <label class="form-label" for="name">Raison sociale</label>
+              <input 
+                type="text" 
+                id="name" 
+                class="form-input" 
+                value="SAMAXAN"
+                disabled
+              >
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="legal_form">Forme juridique</label>
+                <select id="legal_form" class="form-select" disabled>
+                  <option value="SAS">SAS - Société par Actions Simplifiée</option>
+                  <option value="SASU">SASU</option>
+                  <option value="SARL">SARL</option>
+                  <option value="EURL">EURL</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="siret">SIRET siège</label>
+                <input 
+                  type="text" 
+                  id="siret" 
+                  class="form-input" 
+                  value="85126460600027"
+                  disabled
+                >
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="rcs">RCS</label>
+                <select id="rcs" class="form-select" disabled>
+                  <option value="Melun">RCS Melun</option>
+                  <option value="Paris">RCS Paris</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="naf">Code NAF</label>
+                <input 
+                  type="text" 
+                  id="naf" 
+                  class="form-input" 
+                  value="6201Z - Programmation informatique"
+                  disabled
+                >
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="capital">Capital social (EUR)</label>
+              <input 
+                type="number" 
+                id="capital" 
+                class="form-input" 
+                value="1000"
+                disabled
+              >
+            </div>
+          </div>
+          
+          <!-- Section: Adresse -->
+          <div class="form-section">
+            <h2 class="form-section-title">
+              <svg class="form-section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              Adresse du siège
+            </h2>
+            
+            <div class="form-group">
+              <label class="form-label" for="address">Adresse</label>
+              <input 
+                type="text" 
+                id="address" 
+                class="form-input" 
+                value="12 RUE DU PRÉ DES AULNES"
+                disabled
+              >
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="postal_code">Code postal</label>
+                <input 
+                  type="text" 
+                  id="postal_code" 
+                  class="form-input" 
+                  value="77340"
+                  disabled
+                >
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="city">Ville</label>
+                <input 
+                  type="text" 
+                  id="city" 
+                  class="form-input" 
+                  value="PONTAULT-COMBAULT"
+                  disabled
+                >
+              </div>
+            </div>
+          </div>
+          
+          <!-- Section: Représentant légal -->
+          <div class="form-section">
+            <h2 class="form-section-title">
+              <svg class="form-section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              Représentant légal
+            </h2>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="civility">Civilité</label>
+                <select id="civility" class="form-select" disabled>
+                  <option value="M.">M.</option>
+                  <option value="Mme">Mme</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="title">Fonction</label>
+                <select id="title" class="form-select" disabled>
+                  <option value="Président">Président (SAS/SASU)</option>
+                  <option value="Gérant">Gérant (SARL/EURL)</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="first_name">Prénom</label>
+                <input 
+                  type="text" 
+                  id="first_name" 
+                  class="form-input" 
+                  value="Samy"
+                  disabled
+                >
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="last_name">Nom</label>
+                <input 
+                  type="text" 
+                  id="last_name" 
+                  class="form-input" 
+                  value="HERZI"
+                  disabled
+                >
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div class="onboarding-footer">
+        <button type="button" class="btn btn-ghost" onclick="window.location.href='index.html'">
+          ← Retour
+        </button>
+        
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary">
+            Sauvegarder et quitter
+          </button>
+          <button type="button" class="btn btn-primary" onclick="nextStep()">
+            Suivant
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px; margin-left: 4px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function searchSiren() {
+      const sirenInput = document.getElementById('siren');
+      const successMessage = document.getElementById('success-message');
+      
+      // Simuler recherche API Pappers
+      sirenInput.disabled = true;
+      
+      setTimeout(() => {
+        // Afficher message succès
+        successMessage.style.display = 'flex';
+        
+        // Activer les champs
+        document.querySelectorAll('.form-input, .form-select').forEach(el => {
+          el.disabled = false;
+        });
+        
+        sirenInput.disabled = true; // Garder SIREN disabled après remplissage
+      }, 800);
+    }
+    
+    function nextStep() {
+      // Animation de transition
+      document.querySelector('.onboarding-card').style.transform = 'scale(0.95)';
+      document.querySelector('.onboarding-card').style.opacity = '0';
+      
+      setTimeout(() => {
+        window.location.href = 'onboarding-2.html';
+      }, 200);
+    }
+    
+    // Auto-trigger search on load (maquette)
+    window.addEventListener('load', () => {
+      setTimeout(searchSiren, 500);
+    });
+  </script>
+</body>
+</html>
