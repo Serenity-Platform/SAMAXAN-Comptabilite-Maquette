@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration — Étape 3/5 — SAMAXAN Comptabilité</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/theme.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    }
+    
+    .onboarding-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-8);
+    }
+    
+    .onboarding-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      max-width: 720px;
+      width: 100%;
+      overflow: hidden;
+    }
+    
+    .onboarding-header {
+      background: var(--gradient-primary);
+      padding: var(--spacing-8);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .onboarding-header::before {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      top: -200px;
+      right: -200px;
+    }
+    
+    .onboarding-logo {
+      height: 48px;
+      margin-bottom: var(--spacing-4);
+      filter: brightness(0) invert(1);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .onboarding-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 800;
+      color: white;
+      margin-bottom: var(--spacing-2);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .onboarding-subtitle {
+      font-size: var(--font-size-base);
+      color: rgba(255,255,255,0.9);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: rgba(67, 30, 150, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-primary);
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 20px rgba(67, 30, 150, 0.5);
+    }
+    
+    .onboarding-body {
+      padding: var(--spacing-8);
+    }
+    
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-2);
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .step-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: var(--radius-full);
+      background: var(--border-primary);
+      transition: all 0.3s ease;
+    }
+    
+    .step-dot.active {
+      width: 32px;
+      background: var(--gradient-primary);
+    }
+    
+    .step-dot.completed {
+      background: var(--success);
+    }
+    
+    .form-section {
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .form-section-title {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-4);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+    }
+    
+    .form-section-icon {
+      width: 24px;
+      height: 24px;
+      padding: 4px;
+      background: var(--violet-light);
+      border-radius: var(--radius-md);
+      color: var(--violet-primary);
+    }
+    
+    .bank-card {
+      padding: var(--spacing-5);
+      border: 2px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      background: var(--bg-secondary);
+      margin-bottom: var(--spacing-4);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-4);
+      transition: all 0.2s ease;
+    }
+    
+    .bank-card:hover {
+      border-color: var(--violet-accent);
+      transform: translateX(4px);
+    }
+    
+    .bank-card.connected {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.05);
+    }
+    
+    .bank-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--font-size-lg);
+      flex-shrink: 0;
+    }
+    
+    .bank-icon.revolut {
+      background: linear-gradient(135deg, #0075EB, #00D4FF);
+      color: white;
+    }
+    
+    .bank-icon.stripe {
+      background: linear-gradient(135deg, #635BFF, #0A2540);
+      color: white;
+    }
+    
+    .bank-icon.qonto {
+      background: linear-gradient(135deg, #9B7EF8, #6E56CF);
+      color: white;
+    }
+    
+    .bank-info {
+      flex: 1;
+    }
+    
+    .bank-name {
+      font-size: var(--font-size-base);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    
+    .bank-description {
+      font-size: var(--font-size-sm);
+      color: var(--text-tertiary);
+    }
+    
+    .bank-status {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+    }
+    
+    .bank-status.connected {
+      color: var(--success);
+    }
+    
+    .bank-status svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .info-box {
+      padding: var(--spacing-4);
+      background: rgba(59, 130, 246, 0.1);
+      border-left: 3px solid var(--info);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-6);
+    }
+    
+    .info-box-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--info);
+      margin-bottom: var(--spacing-2);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+    }
+    
+    .info-box-content {
+      font-size: var(--font-size-sm);
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+    
+    .onboarding-footer {
+      padding: var(--spacing-6) var(--spacing-8);
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-primary);
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: var(--spacing-3);
+    }
+    
+    .skip-link {
+      font-size: var(--font-size-sm);
+      color: var(--text-tertiary);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    
+    .skip-link:hover {
+      color: var(--violet-primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="onboarding-container">
+    <div class="onboarding-card">
+      <div class="onboarding-header">
+        <img src="assets/img/logo-samaxan-baseline.svg" alt="SAMAXAN" class="onboarding-logo">
+        <h1 class="onboarding-title">Connexions bancaires</h1>
+        <p class="onboarding-subtitle">Synchronisez vos comptes pour automatiser vos écritures</p>
+      </div>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 60%;"></div>
+      </div>
+      
+      <div class="onboarding-body">
+        <div class="step-indicator">
+          <div class="step-dot completed"></div>
+          <div class="step-dot completed"></div>
+          <div class="step-dot active"></div>
+          <div class="step-dot"></div>
+          <div class="step-dot"></div>
+        </div>
+        
+        <div class="info-box">
+          <div class="info-box-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+            Connexion sécurisée
+          </div>
+          <p class="info-box-content">
+            Nous utilisons des APIs officielles et des connexions chiffrées. Nous ne stockons jamais vos identifiants bancaires.
+          </p>
+        </div>
+        
+        <!-- Section: Banques -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <svg class="form-section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+            </svg>
+            Comptes bancaires professionnels
+          </h2>
+          
+          <div class="bank-card">
+            <div class="bank-icon revolut">R</div>
+            <div class="bank-info">
+              <div class="bank-name">Revolut Business</div>
+              <div class="bank-description">Compte principal • Transactions quotidiennes</div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Modal Revolut OAuth → Maquette')">
+              Connecter
+            </button>
+          </div>
+          
+          <div class="bank-card">
+            <div class="bank-icon qonto">Q</div>
+            <div class="bank-info">
+              <div class="bank-name">Qonto</div>
+              <div class="bank-description">Compte secondaire • Frais fixes</div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Modal Qonto OAuth → Maquette')">
+              Connecter
+            </button>
+          </div>
+        </div>
+        
+        <!-- Section: Paiements -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <svg class="form-section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            Plateformes de paiement
+          </h2>
+          
+          <div class="bank-card">
+            <div class="bank-icon stripe">S</div>
+            <div class="bank-info">
+              <div class="bank-name">Stripe</div>
+              <div class="bank-description">Encaissements clients • Factures en ligne</div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Modal Stripe OAuth → Maquette')">
+              Connecter
+            </button>
+          </div>
+        </div>
+        
+        <p style="font-size: var(--font-size-sm); color: var(--text-tertiary); text-align: center; margin-top: var(--spacing-6);">
+          <a href="#" class="skip-link">Passer cette étape</a> — Vous pourrez connecter vos comptes plus tard
+        </p>
+      </div>
+      
+      <div class="onboarding-footer">
+        <button type="button" class="btn btn-ghost" onclick="window.location.href='onboarding-2.html'">
+          ← Retour
+        </button>
+        
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary">
+            Sauvegarder et quitter
+          </button>
+          <button type="button" class="btn btn-primary" onclick="nextStep()">
+            Suivant
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px; margin-left: 4px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function nextStep() {
+      document.querySelector('.onboarding-card').style.transform = 'scale(0.95)';
+      document.querySelector('.onboarding-card').style.opacity = '0';
+      
+      setTimeout(() => {
+        window.location.href = 'onboarding-4.html';
+      }, 200);
+    }
+  </script>
+</body>
+</html>

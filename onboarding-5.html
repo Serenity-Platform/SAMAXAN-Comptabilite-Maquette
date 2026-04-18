@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration — Étape 5/5 — SAMAXAN Comptabilité</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/theme.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    }
+    
+    .onboarding-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-8);
+    }
+    
+    .onboarding-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      max-width: 720px;
+      width: 100%;
+      overflow: hidden;
+    }
+    
+    .onboarding-header {
+      background: var(--gradient-primary);
+      padding: var(--spacing-8);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .onboarding-header::before {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      top: -200px;
+      right: -200px;
+    }
+    
+    .onboarding-logo {
+      height: 48px;
+      margin-bottom: var(--spacing-4);
+      filter: brightness(0) invert(1);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .onboarding-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 800;
+      color: white;
+      margin-bottom: var(--spacing-2);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .onboarding-subtitle {
+      font-size: var(--font-size-base);
+      color: rgba(255,255,255,0.9);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: rgba(67, 30, 150, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-primary);
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 20px rgba(67, 30, 150, 0.5);
+    }
+    
+    .onboarding-body {
+      padding: var(--spacing-8);
+    }
+    
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-2);
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .step-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: var(--radius-full);
+      background: var(--border-primary);
+      transition: all 0.3s ease;
+    }
+    
+    .step-dot.active {
+      width: 32px;
+      background: var(--gradient-primary);
+    }
+    
+    .step-dot.completed {
+      background: var(--success);
+    }
+    
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--spacing-6);
+      background: linear-gradient(135deg, #10B981, #059669);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      animation: scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    @keyframes scaleIn {
+      from {
+        transform: scale(0);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    .success-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 800;
+      color: var(--text-primary);
+      text-align: center;
+      margin-bottom: var(--spacing-3);
+    }
+    
+    .success-description {
+      font-size: var(--font-size-base);
+      color: var(--text-tertiary);
+      text-align: center;
+      margin-bottom: var(--spacing-8);
+      line-height: 1.6;
+    }
+    
+    .summary-section {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-6);
+      margin-bottom: var(--spacing-6);
+    }
+    
+    .summary-title {
+      font-size: var(--font-size-base);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-4);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+    }
+    
+    .summary-title svg {
+      width: 20px;
+      height: 20px;
+      color: var(--violet-primary);
+    }
+    
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--spacing-3) 0;
+      border-bottom: 1px solid var(--border-primary);
+    }
+    
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+    
+    .summary-label {
+      font-size: var(--font-size-sm);
+      color: var(--text-tertiary);
+    }
+    
+    .summary-value {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-4);
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .feature-card {
+      padding: var(--spacing-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-primary);
+    }
+    
+    .feature-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--violet-light);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--violet-primary);
+      margin-bottom: var(--spacing-3);
+    }
+    
+    .feature-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-1);
+    }
+    
+    .feature-description {
+      font-size: var(--font-size-xs);
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+    
+    .onboarding-footer {
+      padding: var(--spacing-6) var(--spacing-8);
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-primary);
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: var(--spacing-3);
+      margin: 0 auto;
+    }
+    
+    @media (max-width: 640px) {
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="onboarding-container">
+    <div class="onboarding-card">
+      <div class="onboarding-header">
+        <img src="assets/img/logo-samaxan-baseline.svg" alt="SAMAXAN" class="onboarding-logo">
+        <h1 class="onboarding-title">Configuration terminée !</h1>
+        <p class="onboarding-subtitle">Votre espace comptable est prêt à l'emploi</p>
+      </div>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 100%;"></div>
+      </div>
+      
+      <div class="onboarding-body">
+        <div class="step-indicator">
+          <div class="step-dot completed"></div>
+          <div class="step-dot completed"></div>
+          <div class="step-dot completed"></div>
+          <div class="step-dot completed"></div>
+          <div class="step-dot completed"></div>
+        </div>
+        
+        <div class="success-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 48px; height: 48px;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        
+        <h2 class="success-title">Tout est prêt !</h2>
+        <p class="success-description">
+          Votre espace SAMAXAN Comptabilité est configuré et opérationnel.<br>
+          Vous pouvez maintenant piloter votre activité en temps réel.
+        </p>
+        
+        <!-- Summary -->
+        <div class="summary-section">
+          <div class="summary-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            Récapitulatif configuration
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Société</span>
+            <span class="summary-value">SAMAXAN SAS</span>
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">SIREN</span>
+            <span class="summary-value">851264606</span>
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Régime TVA</span>
+            <span class="summary-value">Franchise en base</span>
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Régime IS</span>
+            <span class="summary-value">Réel simplifié</span>
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Exercice fiscal</span>
+            <span class="summary-value">01/01 → 31/12</span>
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Numérotation factures</span>
+            <span class="summary-value">F-2026-001</span>
+          </div>
+        </div>
+        
+        <!-- Features disponibles -->
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+              </svg>
+            </div>
+            <div class="feature-title">Écritures automatiques</div>
+            <p class="feature-description">IA catégorise vos transactions bancaires</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <div class="feature-title">Factur-X PDF+XML</div>
+            <p class="feature-description">Conforme e-facturation 2026</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+            </div>
+            <div class="feature-title">Liasse fiscale auto</div>
+            <p class="feature-description">2033 & 2065 pré-remplis</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              </svg>
+            </div>
+            <div class="feature-title">Audit fiscal IA</div>
+            <p class="feature-description">Simulation contrôle DGFIP</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="onboarding-footer">
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary btn-lg" onclick="goToDashboard()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px; margin-right: 8px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            Accéder au dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function goToDashboard() {
+      // Animation de célébration (confetti simulation)
+      document.querySelector('.onboarding-card').style.transform = 'scale(1.02)';
+      
+      setTimeout(() => {
+        document.querySelector('.onboarding-card').style.transform = 'scale(0.95)';
+        document.querySelector('.onboarding-card').style.opacity = '0';
+      }, 100);
+      
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 300);
+    }
+  </script>
+</body>
+</html>

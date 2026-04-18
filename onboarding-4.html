@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration — Étape 4/5 — SAMAXAN Comptabilité</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/theme.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    }
+    
+    .onboarding-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-8);
+    }
+    
+    .onboarding-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      max-width: 720px;
+      width: 100%;
+      overflow: hidden;
+    }
+    
+    .onboarding-header {
+      background: var(--gradient-primary);
+      padding: var(--spacing-8);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .onboarding-header::before {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      top: -200px;
+      right: -200px;
+    }
+    
+    .onboarding-logo {
+      height: 48px;
+      margin-bottom: var(--spacing-4);
+      filter: brightness(0) invert(1);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .onboarding-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 800;
+      color: white;
+      margin-bottom: var(--spacing-2);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .onboarding-subtitle {
+      font-size: var(--font-size-base);
+      color: rgba(255,255,255,0.9);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: rgba(67, 30, 150, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-primary);
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 20px rgba(67, 30, 150, 0.5);
+    }
+    
+    .onboarding-body {
+      padding: var(--spacing-8);
+    }
+    
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-2);
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .step-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: var(--radius-full);
+      background: var(--border-primary);
+      transition: all 0.3s ease;
+    }
+    
+    .step-dot.active {
+      width: 32px;
+      background: var(--gradient-primary);
+    }
+    
+    .step-dot.completed {
+      background: var(--success);
+    }
+    
+    .form-section {
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .form-section-title {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-4);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+    }
+    
+    .form-section-icon {
+      width: 24px;
+      height: 24px;
+      padding: 4px;
+      background: var(--violet-light);
+      border-radius: var(--radius-md);
+      color: var(--violet-primary);
+    }
+    
+    .upload-zone {
+      border: 2px dashed var(--border-secondary);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-8);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--bg-secondary);
+    }
+    
+    .upload-zone:hover {
+      border-color: var(--violet-primary);
+      background: var(--bg-tertiary);
+    }
+    
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto var(--spacing-4);
+      color: var(--text-quaternary);
+    }
+    
+    .upload-title {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-2);
+    }
+    
+    .upload-description {
+      font-size: var(--font-size-sm);
+      color: var(--text-tertiary);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-4);
+    }
+    
+    .preview-box {
+      padding: var(--spacing-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-primary);
+    }
+    
+    .preview-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: var(--spacing-3);
+    }
+    
+    .preview-example {
+      font-family: 'Courier New', monospace;
+      font-size: var(--font-size-sm);
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+      padding: var(--spacing-3);
+      border-radius: var(--radius-sm);
+    }
+    
+    .info-box {
+      padding: var(--spacing-4);
+      background: rgba(59, 130, 246, 0.1);
+      border-left: 3px solid var(--info);
+      border-radius: var(--radius-md);
+      margin-top: var(--spacing-4);
+    }
+    
+    .info-box-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--info);
+      margin-bottom: var(--spacing-2);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+    }
+    
+    .info-box-content {
+      font-size: var(--font-size-sm);
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+    
+    .onboarding-footer {
+      padding: var(--spacing-6) var(--spacing-8);
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-primary);
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: var(--spacing-3);
+    }
+    
+    @media (max-width: 640px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="onboarding-container">
+    <div class="onboarding-card">
+      <div class="onboarding-header">
+        <img src="assets/img/logo-samaxan-baseline.svg" alt="SAMAXAN" class="onboarding-logo">
+        <h1 class="onboarding-title">Facturation</h1>
+        <p class="onboarding-subtitle">Configurez la numérotation et importez votre historique</p>
+      </div>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 80%;"></div>
+      </div>
+      
+      <div class="onboarding-body">
+        <div class="step-indicator">
+          <div class="step-dot completed"></div>
+          <div class="step-dot completed"></div>
+          <div class="step-dot completed"></div>
+          <div class="step-dot active"></div>
+          <div class="step-dot"></div>
+        </div>
+        
+        <!-- Section: Numérotation -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <svg class="form-section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+            </svg>
+            Numérotation automatique
+          </h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="invoice_prefix">Préfixe factures</label>
+              <input 
+                type="text" 
+                id="invoice_prefix" 
+                class="form-input" 
+                value="F-2026-"
+                placeholder="F-2026-"
+              >
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="invoice_start">Numéro de départ</label>
+              <input 
+                type="number" 
+                id="invoice_start" 
+                class="form-input" 
+                value="001"
+                placeholder="001"
+              >
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="quote_prefix">Préfixe devis</label>
+              <input 
+                type="text" 
+                id="quote_prefix" 
+                class="form-input" 
+                value="D-2026-"
+                placeholder="D-2026-"
+              >
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="credit_prefix">Préfixe avoirs</label>
+              <input 
+                type="text" 
+                id="credit_prefix" 
+                class="form-input" 
+                value="AV-2026-"
+                placeholder="AV-2026-"
+              >
+            </div>
+          </div>
+          
+          <div class="preview-box">
+            <div class="preview-title">Aperçu numérotation</div>
+            <div class="preview-example">
+              Facture : <strong>F-2026-001</strong><br>
+              Devis : <strong>D-2026-001</strong><br>
+              Avoir : <strong>AV-2026-001</strong>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Section: Import historique -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <svg class="form-section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            Import historique (optionnel)
+          </h2>
+          
+          <div class="upload-zone" onclick="document.getElementById('file-upload').click()">
+            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            <div class="upload-title">Glissez vos factures ici</div>
+            <p class="upload-description">
+              Formats acceptés : Excel (.xlsx), CSV, ZIP de PDF<br>
+              Taille max : 50 MB
+            </p>
+            <input 
+              type="file" 
+              id="file-upload" 
+              accept=".xlsx,.csv,.zip,.pdf" 
+              style="display: none;"
+              multiple
+            >
+          </div>
+          
+          <div class="info-box">
+            <div class="info-box-title">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Intelligence artificielle
+            </div>
+            <p class="info-box-content">
+              Notre IA va analyser vos documents et extraire automatiquement : numéros, dates, montants, clients, TVA.
+              Vous pourrez valider les données avant import.
+            </p>
+          </div>
+        </div>
+        
+        <!-- Section: E-facturation -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <svg class="form-section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+            E-facturation 2026
+          </h2>
+          
+          <div class="form-group">
+            <label class="form-label" for="pdp_platform">Plateforme de dépôt agréée</label>
+            <select id="pdp_platform" class="form-select">
+              <option value="">— Je choisirai plus tard —</option>
+              <option value="chorus_pro">Chorus Pro (administration publique)</option>
+              <option value="pennylane">Pennylane</option>
+              <option value="sellsy">Sellsy</option>
+              <option value="axonaut">Axonaut</option>
+              <option value="quickbooks">QuickBooks</option>
+            </select>
+          </div>
+          
+          <div class="info-box">
+            <div class="info-box-title">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              Obligation septembre 2026
+            </div>
+            <p class="info-box-content">
+              À partir du 1er septembre 2026, toutes les entreprises devront être capables de recevoir des factures électroniques. 
+              SAMAXAN génère déjà des factures au format Factur-X (PDF + XML).
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="onboarding-footer">
+        <button type="button" class="btn btn-ghost" onclick="window.location.href='onboarding-3.html'">
+          ← Retour
+        </button>
+        
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary">
+            Sauvegarder et quitter
+          </button>
+          <button type="button" class="btn btn-primary" onclick="nextStep()">
+            Suivant
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px; margin-left: 4px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function nextStep() {
+      document.querySelector('.onboarding-card').style.transform = 'scale(0.95)';
+      document.querySelector('.onboarding-card').style.opacity = '0';
+      
+      setTimeout(() => {
+        window.location.href = 'onboarding-5.html';
+      }, 200);
+    }
+    
+    // File upload simulation
+    document.getElementById('file-upload').addEventListener('change', function(e) {
+      const files = e.target.files;
+      if (files.length > 0) {
+        alert(`${files.length} fichier(s) sélectionné(s) — IA en cours d'analyse (maquette)`);
+      }
+    });
+  </script>
+</body>
+</html>
