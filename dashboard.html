@@ -14,7 +14,7 @@
     .period-selector {
       display: inline-flex;
       gap: var(--spacing-2);
-      background: var(--gray-100);
+      background: var(--bg-tertiary);
       padding: 4px;
       border-radius: var(--radius-md);
     }
@@ -26,17 +26,18 @@
       border-radius: var(--radius-sm);
       font-size: var(--font-size-sm);
       font-weight: 500;
-      color: var(--gray-700);
+      color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.15s ease;
     }
     
     .period-selector button:hover {
-      background: white;
+      background: var(--bg-primary);
+      color: var(--text-primary);
     }
     
     .period-selector button.active {
-      background: white;
+      background: var(--bg-primary);
       color: var(--violet-primary);
       box-shadow: var(--shadow-sm);
     }
