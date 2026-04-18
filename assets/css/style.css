@@ -657,52 +657,52 @@ tr:hover {
 
 /* === DARK MODE === */
 [data-theme="dark"] {
-  /* Backgrounds inversés */
-  --bg-primary: #0F172A;
-  --bg-secondary: #1E293B;
-  --bg-tertiary: #334155;
+  /* Backgrounds vraiment sombres (comme Pennylane/Linear) */
+  --bg-primary: #1A1D2E;      /* Background cartes */
+  --bg-secondary: #0F1117;    /* Background page */
+  --bg-tertiary: #252837;     /* Background hover/tertiary */
   
-  /* Text inversés */
-  --text-primary: #F1F5F9;
-  --text-secondary: #CBD5E1;
-  --text-tertiary: #94A3B8;
-  --text-quaternary: #64748B;
+  /* Text avec bon contraste */
+  --text-primary: #FFFFFF;
+  --text-secondary: #B4B9C9;
+  --text-tertiary: #8B91A7;
+  --text-quaternary: #6B7280;
   
-  /* Borders plus subtiles */
-  --border-primary: #334155;
-  --border-secondary: #475569;
+  /* Borders subtiles mais visibles */
+  --border-primary: #2A2D3E;
+  --border-secondary: #3A3D4E;
   
-  /* Shadows adaptées */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+  /* Shadows plus prononcées en dark */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 24px 48px -12px rgba(0, 0, 0, 0.8);
   
-  /* Rétrocompatibilité (deprecated vars) */
-  --gray-50: #1E293B;
-  --gray-100: #334155;
-  --gray-200: #475569;
-  --gray-300: #64748B;
-  --gray-400: #94A3B8;
-  --gray-500: #CBD5E1;
-  --gray-600: #E2E8F0;
-  --gray-700: #F1F5F9;
-  --gray-800: #F8FAFC;
+  /* Rétrocompatibilité */
+  --gray-50: #252837;
+  --gray-100: #2A2D3E;
+  --gray-200: #3A3D4E;
+  --gray-300: #4A4D5E;
+  --gray-400: #6B7280;
+  --gray-500: #8B91A7;
+  --gray-600: #B4B9C9;
+  --gray-700: #D1D5DB;
+  --gray-800: #E5E7EB;
   --gray-900: #FFFFFF;
 }
 
 /* Respect préférence système */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg-primary: #0F172A;
-    --bg-secondary: #1E293B;
-    --bg-tertiary: #334155;
-    --text-primary: #F1F5F9;
-    --text-secondary: #CBD5E1;
-    --text-tertiary: #94A3B8;
-    --text-quaternary: #64748B;
-    --border-primary: #334155;
-    --border-secondary: #475569;
+    --bg-primary: #1A1D2E;
+    --bg-secondary: #0F1117;
+    --bg-tertiary: #252837;
+    --text-primary: #FFFFFF;
+    --text-secondary: #B4B9C9;
+    --text-tertiary: #8B91A7;
+    --text-quaternary: #6B7280;
+    --border-primary: #2A2D3E;
+    --border-secondary: #3A3D4E;
   }
 }
 
