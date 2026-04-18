@@ -24,9 +24,5 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = false
-  conditions = {Role = ["admin"]}
+# Pas de redirects pour maquette statique HTML
+# Chaque page est accessible directement
