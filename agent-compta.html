@@ -6,6 +6,7 @@
   <title>Agent IA — SAMAXAN Comptabilité</title>
   <link rel="stylesheet" href="assets/css/style.css">
   <script src="assets/js/theme.js"></script>
+  <script src="assets/js/agent-client.js"></script>
   <style>
     .agent-layout {
       display: flex;
@@ -550,16 +551,21 @@
       sendButton.disabled = true;
       
       // Show typing indicator
-      setTimeout(() => {
-        addTypingIndicator();
-        
-        // Simulate AI response
-        setTimeout(() => {
+      addTypingIndicator();
+      
+      // Call real API
+      sendMessageToAgent(message)
+        .then(response => {
           removeTypingIndicator();
-          addAgentResponse(message);
+          addMessage('agent', response);
           sendButton.disabled = false;
-        }, 2000);
-      }, 500);
+        })
+        .catch(error => {
+          console.error('Agent error:', error);
+          removeTypingIndicator();
+          addMessage('agent', `Erreur: ${error.message}`);
+          sendButton.disabled = false;
+        });
     }
     
     function addMessage(type, content) {
