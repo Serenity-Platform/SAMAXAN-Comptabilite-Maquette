@@ -1,20 +1,25 @@
-# Paperasse - Config Netlify monorepo
-# Remplace l'ancien .netlify/netlify.toml cassé et l'ancien netlify.toml
+# Paperasse - Config Netlify monorepo npm workspaces
 # Site: 0112f5df-60eb-4a03-b1d9-08b4b4168c22 (samaxan-compta-maquette)
+#
+# Rationale :
+# - base = "." (root) pour que npm ci lise le package-lock.json racine (workspaces)
+# - command installe à la racine puis build le workspace web
+# - publish = apps/web/dist (relatif à base)
 
 [build]
-  base    = "apps/web"
-  command = "npm ci && npm run build"
-  publish = "dist"
+  base    = "."
+  command = "npm ci && npm run build --workspace=apps/web"
+  publish = "apps/web/dist"
 
 [build.environment]
   NODE_VERSION = "20"
+  NPM_VERSION  = "10"
 
 [[redirects]]
-  from = "/*"
-  to   = "/index.html"
+  from   = "/*"
+  to     = "/index.html"
   status = 200
 
 [dev]
-  command = "npm run dev"
+  command = "npm run dev --workspace=apps/web"
   port    = 5173
