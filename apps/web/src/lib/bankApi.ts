@@ -53,6 +53,26 @@ export type ProposalStatus =
 
 export type ConfidenceLevel = "low" | "medium" | "high";
 
+export type DocumentType =
+  | "purchase_invoice"
+  | "sales_invoice"
+  | "credit_note"
+  | "bank_statement"
+  | "receipt"
+  | "contract"
+  | "other";
+
+export type AttachedDocument = {
+  id: string;
+  file_name: string;
+  document_type: DocumentType;
+  storage_path: string;
+  content_hash: string;
+  file_size_bytes: number;
+  mime_type: string;
+  created_at: string;
+};
+
 export type ReviewProposal = {
   id: string;
   tenant_id: string;
@@ -88,6 +108,7 @@ export type ReviewProposal = {
   je_piece_reference: string | null;
   je_entry_date: string | null;
   je_status: "posted" | "locked" | "reversed" | null;
+  attached_documents: AttachedDocument[];
 };
 
 export type SyncResult = {
@@ -252,4 +273,104 @@ export async function undoProposal(proposalId: string): Promise<{
     proposal_id: string;
     reversed_journal_entry_id: string;
   };
+}
+
+// ============================================================
+// Source documents - pieces jointes (Lot 2.2 extension)
+// ============================================================
+const COMPTA_BUCKET = "compta-documents";
+
+async function sha256Hex(buffer: ArrayBuffer): Promise<string> {
+  const hash = await crypto.subtle.digest("SHA-256", buffer);
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function slugifyFileName(name: string): string {
+  const normalized = name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // strip accents
+    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .replace(/_+/g, "_");
+  return normalized.slice(0, 120);
+}
+
+export async function uploadAndAttachDocument(params: {
+  file: File;
+  sourceEventId: string;
+  tenantId: string;
+  documentType?: DocumentType;
+}): Promise<{
+  status: "created" | "attached_existing";
+  document_id: string;
+  storage_path: string;
+  file_name: string;
+  already_existed: boolean;
+}> {
+  const supabase = getSupabase();
+
+  // 1. Calculer hash SHA-256 pour idempotence
+  const buffer = await params.file.arrayBuffer();
+  const contentHash = await sha256Hex(buffer);
+
+  // 2. Construire le storage path : {tenant}/source_documents/{event}/{hash8}-{filename}
+  const fileNameSafe = slugifyFileName(params.file.name);
+  const storagePath = `${params.tenantId}/source_documents/${params.sourceEventId}/${contentHash.slice(0, 12)}-${fileNameSafe}`;
+
+  // 3. Upload Storage (upsert: true pour gerer le cas du meme hash rejoue)
+  const { error: uploadErr } = await supabase.storage
+    .from(COMPTA_BUCKET)
+    .upload(storagePath, params.file, {
+      contentType: params.file.type || "application/octet-stream",
+      upsert: true,
+    });
+  if (uploadErr) throw new Error(`upload: ${uploadErr.message}`);
+
+  // 4. Persister la row source_documents via RPC
+  const { data, error } = await supabase.rpc("fn_source_document_attach", {
+    p_source_event_id: params.sourceEventId,
+    p_file_name: params.file.name,
+    p_storage_path: storagePath,
+    p_content_hash: contentHash,
+    p_file_size_bytes: params.file.size,
+    p_mime_type: params.file.type || "application/octet-stream",
+    p_document_type: params.documentType ?? "receipt",
+  });
+  if (error) throw new Error(`attach: ${error.message}`);
+  return data as {
+    status: "created" | "attached_existing";
+    document_id: string;
+    storage_path: string;
+    file_name: string;
+    already_existed: boolean;
+  };
+}
+
+export async function detachDocument(params: {
+  documentId: string;
+  storagePath: string;
+}): Promise<void> {
+  const supabase = getSupabase();
+
+  // Supprimer la row DB d'abord (echoue si liee a une journal_entry postee)
+  const { error: rpcErr } = await supabase.rpc("fn_source_document_detach", {
+    p_document_id: params.documentId,
+  });
+  if (rpcErr) throw new Error(`detach: ${rpcErr.message}`);
+
+  // Ensuite supprimer le fichier Storage (best-effort : erreur non bloquante)
+  await supabase.storage.from(COMPTA_BUCKET).remove([params.storagePath]);
+}
+
+export async function getDocumentSignedUrl(
+  storagePath: string,
+  expiresInSec: number = 600,
+): Promise<string> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase.storage
+    .from(COMPTA_BUCKET)
+    .createSignedUrl(storagePath, expiresInSec);
+  if (error) throw new Error(`signed_url: ${error.message}`);
+  return data.signedUrl;
 }

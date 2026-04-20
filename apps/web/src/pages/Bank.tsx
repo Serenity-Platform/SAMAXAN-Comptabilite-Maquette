@@ -6,13 +6,18 @@ import {
   ArrowRight,
   CheckCircle2,
   ChevronDown,
+  ExternalLink,
   Eye,
   EyeOff,
+  FileText,
   Keyboard,
   Landmark,
+  Paperclip,
   RotateCw,
   Search,
+  Trash2,
   Undo2,
+  Upload,
   X,
   XCircle,
 } from "lucide-react";
@@ -22,12 +27,17 @@ import { Button } from "../components/Button";
 import { EmptyState } from "../components/EmptyState";
 import {
   approveProposal,
+  detachDocument,
+  getDocumentSignedUrl,
   listBankIntegrations,
   listReviewProposals,
   rejectProposal,
   triggerRevolutSync,
   undoProposal,
+  uploadAndAttachDocument,
+  type AttachedDocument,
   type BankIntegration,
+  type DocumentType,
   type ProposalFilter,
   type ProposedLine,
   type ReviewProposal,
@@ -260,6 +270,84 @@ export function Bank() {
     [actionInProgress, pushToast, selectNext],
   );
 
+  const doUpload = useCallback(
+    async (proposal: ReviewProposal, file: File, docType: DocumentType) => {
+      if (actionInProgress) return;
+      setActionInProgress(true);
+      try {
+        const result = await uploadAndAttachDocument({
+          file,
+          sourceEventId: proposal.source_event_id,
+          tenantId: proposal.tenant_id,
+          documentType: docType,
+        });
+        // Optimistic : ajouter le doc a la proposal courante dans le state
+        const newDoc: AttachedDocument = {
+          id: result.document_id,
+          file_name: file.name,
+          document_type: docType,
+          storage_path: result.storage_path,
+          content_hash: "",
+          file_size_bytes: file.size,
+          mime_type: file.type || "application/octet-stream",
+          created_at: new Date().toISOString(),
+        };
+        setProposals((prev) =>
+          prev.map((p) =>
+            p.id === proposal.id
+              ? {
+                  ...p,
+                  attached_documents: result.already_existed
+                    ? p.attached_documents // deja presente, pas de doublon
+                    : [newDoc, ...p.attached_documents],
+                }
+              : p,
+          ),
+        );
+        pushToast({
+          tone: "success",
+          message: result.already_existed
+            ? `Piece deja attachee : ${file.name}`
+            : `Piece ajoutee : ${file.name}`,
+        });
+      } catch (err) {
+        pushToast({ tone: "error", message: errorMsg(err) });
+      } finally {
+        setActionInProgress(false);
+      }
+    },
+    [actionInProgress, pushToast],
+  );
+
+  const doDetach = useCallback(
+    async (proposal: ReviewProposal, doc: AttachedDocument) => {
+      if (actionInProgress) return;
+      setActionInProgress(true);
+      try {
+        await detachDocument({
+          documentId: doc.id,
+          storagePath: doc.storage_path,
+        });
+        setProposals((prev) =>
+          prev.map((p) =>
+            p.id === proposal.id
+              ? {
+                  ...p,
+                  attached_documents: p.attached_documents.filter((d) => d.id !== doc.id),
+                }
+              : p,
+          ),
+        );
+        pushToast({ tone: "info", message: `Piece supprimee : ${doc.file_name}` });
+      } catch (err) {
+        pushToast({ tone: "error", message: errorMsg(err) });
+      } finally {
+        setActionInProgress(false);
+      }
+    },
+    [actionInProgress, pushToast],
+  );
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -417,6 +505,8 @@ export function Bank() {
           onApprove={(override) => void doApprove(selected, override)}
           onReject={(reason) => void doReject(selected, reason)}
           onUndo={() => void doUndo(selected.id)}
+          onUpload={(file, docType) => void doUpload(selected, file, docType)}
+          onDetach={(doc) => void doDetach(selected, doc)}
           actionInProgress={actionInProgress}
         />
       )}
@@ -635,6 +725,7 @@ function ProposalsTable({
             <Th>Description</Th>
             <Th align="right">Montant</Th>
             <Th>PCG</Th>
+            <Th>PJ</Th>
             <Th>Statut</Th>
             <Th>Conf.</Th>
           </tr>
@@ -718,6 +809,9 @@ function ProposalsTable({
                   >
                     {pcgDebit} / {pcgCredit}
                   </span>
+                </Td>
+                <Td padding={rowPadding}>
+                  <AttachmentBadge count={p.attached_documents?.length ?? 0} />
                 </Td>
                 <Td padding={rowPadding}>
                   <StatusBadge status={p.status} pieceRef={p.je_piece_reference} />
@@ -809,6 +903,26 @@ function StatusBadge({ status, pieceRef }: { status: string; pieceRef: string | 
   return <span style={badgeStyle("soft")}>{status}</span>;
 }
 
+function AttachmentBadge({ count }: { count: number }) {
+  const hasAny = count > 0;
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        fontSize: theme.fontSize.xs,
+        color: hasAny ? theme.color.primary : theme.color.textFaint,
+        fontWeight: hasAny ? 600 : 400,
+      }}
+      title={hasAny ? `${count} piece${count > 1 ? "s" : ""} jointe${count > 1 ? "s" : ""}` : "Aucune piece jointe"}
+    >
+      <Paperclip size={12} />
+      {hasAny ? count : ""}
+    </span>
+  );
+}
+
 function ConfidenceDot({ level }: { level: "low" | "medium" | "high" | null }) {
   const color =
     level === "high"
@@ -857,6 +971,8 @@ type DrawerProps = {
   onApprove: (override?: ProposedLine[]) => void;
   onReject: (reason: string) => void;
   onUndo: () => void;
+  onUpload: (file: File, docType: DocumentType) => void;
+  onDetach: (doc: AttachedDocument) => void;
   actionInProgress: boolean;
 };
 
@@ -870,6 +986,8 @@ function ProposalDrawer({
   onApprove,
   onReject,
   onUndo,
+  onUpload,
+  onDetach,
   actionInProgress,
 }: DrawerProps) {
   const [rejectMode, setRejectMode] = useState(false);
@@ -1065,6 +1183,17 @@ function ProposalDrawer({
             </div>
           </Section>
 
+          <Section
+            title={`Pieces jointes${proposal.attached_documents.length > 0 ? ` (${proposal.attached_documents.length})` : ""}`}
+          >
+            <AttachmentsSection
+              proposal={proposal}
+              onUpload={onUpload}
+              onDetach={onDetach}
+              disabled={actionInProgress || !isApprovable}
+            />
+          </Section>
+
           {ruleApp && (
             <Section title="Regle appliquee">
               <DetailRow label="Code" value={<Code>{ruleApp.rule_code ?? "-"}</Code>} />
@@ -1196,6 +1325,301 @@ function ProposalDrawer({
       </div>
     </>
   );
+}
+
+function AttachmentsSection({
+  proposal,
+  onUpload,
+  onDetach,
+  disabled,
+}: {
+  proposal: ReviewProposal;
+  onUpload: (file: File, docType: DocumentType) => void;
+  onDetach: (doc: AttachedDocument) => void;
+  disabled: boolean;
+}) {
+  const [docType, setDocType] = useState<DocumentType>(() =>
+    defaultDocumentTypeForProposal(proposal),
+  );
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const docs = proposal.attached_documents;
+
+  const handleFiles = (files: FileList | File[]) => {
+    if (disabled) return;
+    const list = Array.from(files);
+    for (const f of list) {
+      onUpload(f, docType);
+    }
+  };
+
+  return (
+    <div>
+      {/* Type de document + zone d'upload */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          marginBottom: 10,
+        }}
+      >
+        <label
+          style={{
+            fontSize: theme.fontSize.xs,
+            color: theme.color.textSoft,
+            flexShrink: 0,
+          }}
+        >
+          Type :
+        </label>
+        <select
+          value={docType}
+          onChange={(e) => setDocType(e.target.value as DocumentType)}
+          disabled={disabled}
+          style={{
+            flex: 1,
+            padding: "6px 8px",
+            border: `1px solid ${theme.color.border}`,
+            borderRadius: theme.radius.sm,
+            fontSize: theme.fontSize.xs,
+            background: theme.color.bg,
+            color: theme.color.text,
+            outline: "none",
+          }}
+        >
+          <option value="receipt">Justificatif / Ticket</option>
+          <option value="purchase_invoice">Facture fournisseur</option>
+          <option value="sales_invoice">Facture client</option>
+          <option value="credit_note">Avoir</option>
+          <option value="bank_statement">Releve bancaire</option>
+          <option value="contract">Contrat</option>
+          <option value="other">Autre</option>
+        </select>
+      </div>
+
+      {/* Zone de drop */}
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (!disabled) setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            handleFiles(e.dataTransfer.files);
+          }
+        }}
+        onClick={() => !disabled && fileInputRef.current?.click()}
+        style={{
+          padding: "14px 12px",
+          borderRadius: theme.radius.md,
+          border: `1.5px dashed ${dragOver ? theme.color.primary : theme.color.border}`,
+          background: dragOver ? theme.color.bgTint : theme.color.bgSoft,
+          cursor: disabled ? "not-allowed" : "pointer",
+          opacity: disabled ? 0.55 : 1,
+          textAlign: "center",
+          transition: "all 0.12s",
+        }}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept=".pdf,.png,.jpg,.jpeg,.csv,.xls,.xlsx"
+          onChange={(e) => {
+            if (e.target.files) handleFiles(e.target.files);
+            e.target.value = "";
+          }}
+          style={{ display: "none" }}
+        />
+        <Upload
+          size={18}
+          style={{ color: theme.color.textSoft, marginBottom: 4 }}
+        />
+        <div
+          style={{
+            fontSize: theme.fontSize.sm,
+            color: theme.color.text,
+            fontWeight: 500,
+          }}
+        >
+          Glisser-deposer ou cliquer pour selectionner
+        </div>
+        <div
+          style={{
+            fontSize: theme.fontSize.xs,
+            color: theme.color.textSoft,
+            marginTop: 2,
+          }}
+        >
+          PDF, image, CSV ou Excel - max 20 Mo par fichier
+        </div>
+      </div>
+
+      {/* Liste des pieces deja jointes */}
+      {docs.length > 0 && (
+        <div
+          style={{
+            marginTop: 12,
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+          }}
+        >
+          {docs.map((doc) => (
+            <AttachedDocumentRow
+              key={doc.id}
+              doc={doc}
+              onDetach={() => onDetach(doc)}
+              disabled={disabled}
+            />
+          ))}
+        </div>
+      )}
+
+      {docs.length === 0 && (
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: theme.fontSize.xs,
+            color: theme.color.textSoft,
+            fontStyle: "italic",
+            textAlign: "center",
+          }}
+        >
+          Aucune piece jointe pour l'instant
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AttachedDocumentRow({
+  doc,
+  onDetach,
+  disabled,
+}: {
+  doc: AttachedDocument;
+  onDetach: () => void;
+  disabled: boolean;
+}) {
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
+  const openPreview = async () => {
+    if (loadingPreview) return;
+    setLoadingPreview(true);
+    try {
+      const url = await getDocumentSignedUrl(doc.storage_path, 600);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (err) {
+      console.error("preview failed", err);
+      alert(`Impossible de previsualiser : ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "8px 10px",
+        border: `1px solid ${theme.color.border}`,
+        borderRadius: theme.radius.sm,
+        background: theme.color.bg,
+      }}
+    >
+      <FileText size={14} style={{ color: theme.color.primary, flexShrink: 0 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: theme.fontSize.sm,
+            color: theme.color.text,
+            fontWeight: 500,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+          title={doc.file_name}
+        >
+          {doc.file_name}
+        </div>
+        <div
+          style={{
+            fontSize: 10,
+            color: theme.color.textSoft,
+            display: "flex",
+            gap: 6,
+            marginTop: 1,
+          }}
+        >
+          <span>{documentTypeLabel(doc.document_type)}</span>
+          <span>·</span>
+          <span>{formatFileSize(doc.file_size_bytes)}</span>
+        </div>
+      </div>
+      <button
+        onClick={openPreview}
+        disabled={loadingPreview}
+        style={iconButtonStyle}
+        title="Previsualiser (nouvel onglet)"
+      >
+        <ExternalLink size={12} />
+      </button>
+      <button
+        onClick={() => {
+          if (confirm(`Supprimer la piece "${doc.file_name}" ?`)) onDetach();
+        }}
+        disabled={disabled}
+        style={{
+          ...iconButtonStyle,
+          color: theme.color.danger,
+          opacity: disabled ? 0.4 : 1,
+          cursor: disabled ? "not-allowed" : "pointer",
+        }}
+        title="Supprimer"
+      >
+        <Trash2 size={12} />
+      </button>
+    </div>
+  );
+}
+
+function documentTypeLabel(t: DocumentType): string {
+  const map: Record<DocumentType, string> = {
+    receipt: "Justificatif",
+    purchase_invoice: "Facture fournisseur",
+    sales_invoice: "Facture client",
+    credit_note: "Avoir",
+    bank_statement: "Releve bancaire",
+    contract: "Contrat",
+    other: "Autre",
+  };
+  return map[t] ?? t;
+}
+
+function defaultDocumentTypeForProposal(p: ReviewProposal): DocumentType {
+  // Inference simple : une depense (negative) = facture fournisseur,
+  // une recette (positive) = facture client, sinon justificatif
+  const amount = p.se_raw_payload?.legs?.[0]?.amount ?? 0;
+  const t = p.se_raw_payload?.type;
+  if (t === "fee" || t === "card_payment_fee" || t === "atm_fee" || t === "exchange") {
+    return "receipt"; // frais bancaires, ticket carte
+  }
+  if (amount > 0) return "sales_invoice";
+  if (amount < 0) return "purchase_invoice";
+  return "receipt";
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} o`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
 }
 
 function LinesEditor({
