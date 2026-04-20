@@ -76,16 +76,16 @@ export function SettingsIntegrations({ onBack }: Props) {
   const onConnectRevolut = async () => {
     setConnecting(true);
     setFeedback({ kind: "idle" });
-    const result = await startRevolutOAuth();
-    setConnecting(false);
-    if (!result.ok) {
+    try {
+      await startRevolutOAuth();
+      // redirection effectuee dans startRevolutOAuth
+    } catch (err) {
+      setConnecting(false);
       setFeedback({
         kind: "error",
-        message: result.message ?? result.error ?? "Impossible de démarrer OAuth Revolut",
+        message: err instanceof Error ? err.message : "Impossible de démarrer OAuth Revolut",
       });
-      return;
     }
-    window.location.href = result.authorize_url;
   };
 
   const onDisconnect = async (id: string) => {
