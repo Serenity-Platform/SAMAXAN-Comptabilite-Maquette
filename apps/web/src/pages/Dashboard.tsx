@@ -42,12 +42,12 @@ export function Dashboard({ session, onSignOut, onStartOnboarding }: Props) {
       setError(null);
       const supabase = getSupabase();
 
-      // Récupérer les infos via les tables RLS-protégées
+      // Récupérer les infos via les vues public.compta_*_v (RLS appliquée via SECURITY INVOKER)
       const { data: memberships, error: memErr } = await supabase
-        .schema("compta")
-        .from("memberships")
+        .from("compta_memberships_v")
         .select("tenant_id, role")
-        .eq("role", "tenant_owner");
+        .eq("role", "tenant_owner")
+        .is("revoked_at", null);
 
       if (cancelled) return;
       if (memErr) {
@@ -63,11 +63,11 @@ export function Dashboard({ session, onSignOut, onStartOnboarding }: Props) {
       const tenantId = memberships[0].tenant_id;
 
       const [tenantRes, leRes, fyRes, journalsRes, periodsRes] = await Promise.all([
-        supabase.schema("compta").from("tenants").select("id, name, created_at").eq("id", tenantId).single(),
-        supabase.schema("compta").from("legal_entities").select("id, name, legal_form, siren, siret, naf, regime_tva, regime_is").eq("tenant_id", tenantId).maybeSingle(),
-        supabase.schema("compta").from("fiscal_years").select("start_date, end_date").eq("tenant_id", tenantId).order("start_date", { ascending: false }).limit(1).maybeSingle(),
-        supabase.schema("compta").from("journals").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        supabase.schema("compta").from("accounting_periods").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
+        supabase.from("compta_tenants_v").select("id, name, created_at").eq("id", tenantId).single(),
+        supabase.from("compta_legal_entities_v").select("id, name, legal_form, siren, siret, naf, regime_tva, regime_is").eq("tenant_id", tenantId).maybeSingle(),
+        supabase.from("compta_fiscal_years_v").select("start_date, end_date").eq("tenant_id", tenantId).order("start_date", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("compta_journals_v").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
+        supabase.from("compta_accounting_periods_v").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
       ]);
 
       if (cancelled) return;
