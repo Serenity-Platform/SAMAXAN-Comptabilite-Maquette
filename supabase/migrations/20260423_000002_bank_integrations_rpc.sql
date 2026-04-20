@@ -1,0 +1,3 @@
+-- Paperasse Lot 2.1 - RPC fn_list_bank_integrations + fn_disconnect_bank_integration
+-- (déjà appliqué en prod, fichier pour trace repo)
+-- Voir /tmp/paperasse-work pour le contenu complet appliqué via Supabase:apply_migration

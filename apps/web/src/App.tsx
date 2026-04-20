@@ -6,8 +6,9 @@ import { Onboarding } from "./pages/Onboarding";
 import { Dashboard } from "./pages/Dashboard";
 import { Settings } from "./pages/Settings";
 import { SettingsCompany } from "./pages/SettingsCompany";
+import { SettingsIntegrations } from "./pages/SettingsIntegrations";
 import { PlaceholderAccounting } from "./pages/PlaceholderAccounting";
-import { PlaceholderBank } from "./pages/PlaceholderBank";
+import { Bank } from "./pages/Bank";
 import { PlaceholderTva } from "./pages/PlaceholderTva";
 import { PlaceholderDocuments } from "./pages/PlaceholderDocuments";
 import { AppShell } from "./layouts/AppShell";
@@ -161,13 +162,19 @@ export default function App() {
           <Dashboard onNavigateSettings={() => goTo("settings-company")} />
         )}
         {route === "settings" && (
-          <Settings onNavigateCompany={() => goTo("settings-company")} />
+          <Settings
+            onNavigateCompany={() => goTo("settings-company")}
+            onNavigateIntegrations={() => goTo("settings-integrations")}
+          />
         )}
         {route === "settings-company" && (
           <SettingsCompany onBack={() => goTo("settings")} />
         )}
+        {route === "settings-integrations" && (
+          <SettingsIntegrations onBack={() => goTo("settings")} />
+        )}
         {route === "accounting" && <PlaceholderAccounting />}
-        {route === "bank" && <PlaceholderBank />}
+        {route === "bank" && <Bank />}
         {route === "tva" && <PlaceholderTva />}
         {route === "documents" && <PlaceholderDocuments />}
       </AppShell>

@@ -1,13 +1,14 @@
 // Paperasse — Page Paramètres (hub)
-import { Building2, ChevronRight, type LucideIcon } from "lucide-react";
+import { Building2, ChevronRight, Plug, type LucideIcon } from "lucide-react";
 import { theme } from "../lib/theme";
 import { PageHeader } from "../components/PageHeader";
 
 type Props = {
   onNavigateCompany: () => void;
+  onNavigateIntegrations: () => void;
 };
 
-export function Settings({ onNavigateCompany }: Props) {
+export function Settings({ onNavigateCompany, onNavigateIntegrations }: Props) {
   return (
     <>
       <PageHeader
@@ -34,10 +35,11 @@ export function Settings({ onNavigateCompany }: Props) {
           badge="Lot 5.x"
         />
 
-        <DisabledSettingsItem
+        <SettingsItem
+          icon={Plug}
           title="Intégrations"
-          description="Revolut, Cdiscount, Octopia, Serenity."
-          badge="Lot 2.x"
+          description="Revolut Business connecté. Cdiscount, Octopia et facturation électronique à venir."
+          onClick={onNavigateIntegrations}
         />
 
         <DisabledSettingsItem

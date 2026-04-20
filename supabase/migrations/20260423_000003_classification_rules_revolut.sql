@@ -1,0 +1,2 @@
+-- Paperasse Lot 2.1 - 4 classification_rules Revolut Business
+-- (déjà appliqué en prod, fichier pour trace repo)

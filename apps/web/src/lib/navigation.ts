@@ -17,7 +17,8 @@ export type NavRoute =
   | "tva"
   | "documents"
   | "settings"
-  | "settings-company";
+  | "settings-company"
+  | "settings-integrations";
 
 export type NavItem = {
   route: NavRoute;
@@ -31,7 +32,7 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { route: "dashboard",  label: "Tableau de bord", icon: LayoutDashboard, status: "active",      since: "v1" },
   { route: "accounting", label: "Comptabilité",    icon: BookOpen,        status: "coming_soon", since: "v2" },
-  { route: "bank",       label: "Banque",          icon: Landmark,        status: "coming_soon", since: "v2" },
+  { route: "bank",       label: "Banque",          icon: Landmark,        status: "active",      since: "v2" },
   { route: "tva",        label: "TVA",             icon: Receipt,         status: "coming_soon", since: "v2" },
   { route: "documents",  label: "Documents",       icon: FileText,        status: "coming_soon", since: "v2" },
   { route: "settings",   label: "Paramètres",      icon: Settings,        status: "active",      since: "v1" },
@@ -40,6 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
 // Routes internes des sous-pages Paramètres
 export const SETTINGS_SUBROUTES: { route: NavRoute; label: string }[] = [
   { route: "settings-company", label: "Société" },
+  { route: "settings-integrations", label: "Intégrations" },
 ];
 
 // Parsing du hash
@@ -63,6 +65,12 @@ export function breadcrumbForRoute(route: NavRoute): { label: string; route?: Na
       { label: "Société" },
     ];
   }
+  if (route === "settings-integrations") {
+    return [
+      { label: "Paramètres", route: "settings" },
+      { label: "Intégrations" },
+    ];
+  }
   const item = NAV_ITEMS.find((n) => n.route === route);
   return item ? [{ label: item.label }] : [{ label: "Accueil" }];
 }
@@ -70,6 +78,7 @@ export function breadcrumbForRoute(route: NavRoute): { label: string; route?: Na
 // Page title (onglet navigateur)
 export function titleForRoute(route: NavRoute): string {
   if (route === "settings-company") return "Société — Paramètres";
+  if (route === "settings-integrations") return "Intégrations — Paramètres";
   const item = NAV_ITEMS.find((n) => n.route === route);
   return item?.label ?? "Paperasse";
 }
