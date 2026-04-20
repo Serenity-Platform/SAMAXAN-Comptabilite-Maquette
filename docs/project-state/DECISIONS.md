@@ -249,3 +249,22 @@ La migration Lot 1.4 `20260421_000099_migrate_samaxan_then_drop_companies.sql` u
 **Références** : `supabase/migrations/20260421_000001_onboarding_helpers.sql` (SQL) + `apps/api/supabase/functions/compta-sirene-lookup/index.ts` (TS).
 
 ---
+
+---
+
+## D017 — 1 tenant par user en v1 (garde-fou RPC)
+
+**Date** : 2026-04-20
+**Contexte** : Le GLOSSAIRE CANONIQUE prévoit v2+ le cas où un tenant peut contenir plusieurs `legal_entity`, et v2+ également le cas où un user peut appartenir à plusieurs tenants. En v1, la paire (tenant_owner, scope_type='tenant') doit être unique par user pour éviter les états indéterminés côté dashboard (quel tenant afficher par défaut ? comment lister ?) et rester cohérent avec l'UX "une seule société".
+
+**Décision** : `compta.fn_onboarding_submit` vérifie explicitement qu'aucun `memberships(role='tenant_owner', scope_type='tenant')` n'existe déjà pour `auth.uid()`. Si c'est le cas, exception `unique_violation` (SQLSTATE 23505). L'Edge Function `compta-onboarding-submit` mappe ça vers HTTP 409 `tenant_already_exists`.
+
+**Alternatives rejetées** :
+- Permettre plusieurs tenants par user dès v1 → complexifie l'UX sans besoin fonctionnel immédiat, oblige à implémenter un picker de tenant partout.
+- Pas de garde-fou (écrasement ou création multiple silencieuse) → risque de pollution DB si l'utilisateur spamme le bouton ou rejoue l'onboarding.
+
+**Levée v2** : quand on voudra supporter multi-tenant par user (cas où Sam gère SYRION-Labs en plus de Samaxan), il suffira de retirer le check dans `fn_onboarding_submit` et de faire évoluer l'UI Dashboard vers un sélecteur de tenant.
+
+**Références** : `supabase/migrations/20260421_000002_onboarding_submit_rpc.sql`, `apps/api/supabase/functions/compta-onboarding-submit/index.ts`.
+
+---
