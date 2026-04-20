@@ -1,0 +1,11 @@
+-- Paperasse Lot 2.1 - RPC wrappers public.fn_compta_* pour Edge Functions
+-- Le schema compta n'est pas expose via PostgREST. Ces wrappers SECURITY DEFINER
+-- encapsulent les operations dans compta.* et sont executables par service_role.
+-- Voir la migration appliquee en prod pour le detail complet des fonctions:
+--   fn_compta_bank_integration_connect
+--   fn_compta_get_legal_entity_for_tenant
+--   fn_compta_revolut_sync_one_tx (atomique: source_event + accounting_proposal)
+--   fn_compta_revolut_sync_finalize
+--   fn_compta_refresh_token_update
+--   fn_compta_get_connected_integration
+--   fn_compta_get_revolut_rules
