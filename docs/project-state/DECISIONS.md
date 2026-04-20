@@ -197,3 +197,55 @@ Journal des arbitrages structurants. Format ADR simplifié : contexte, options, 
 - Ajouter `'draft'` au CHECK → casse l'immutabilité, complique le trigger, brouille sémantique
 
 **Conséquences** : worker Lot 2 et UI Lot 3 doivent suivre ce pattern. Documenté dans ARCHITECTURE.md.
+
+---
+
+## D015 — NAF Sirene autoritative vs saisie manuelle Samaxan (SAS confirmée)
+
+**Date** : 2026-04-20  
+**Contexte** : La row orpheline `public.compta_companies` pour Samaxan contenait `legal_form='SASU'` et `naf='6201Z'` (saisie manuelle). L'API Sirene publique (`recherche-entreprises.api.gouv.fr`) retourne pour le SIREN 851264606 : `nature_juridique='5710'` (SAS) et `activite_principale='47.91B'` (commerce de détail de biens d'occasion). Le dirigeant est `HERZI SAMY - Président de SAS`.
+
+**Décision** : Sirene fait autorité légale. Lors de l'onboarding, les données Sirene sont préremplies mais éditables. Pour Samaxan, les valeurs finales retenues sont :
+- `legal_form = SAS` (validé par Sam 2026-04-20)
+- `naf = 47.91B`
+
+La migration Lot 1.4 `20260421_000099_migrate_samaxan_then_drop_companies.sql` utilisera les valeurs Sirene et non les valeurs saisies.
+
+**Alternatives rejetées** :
+- Conserver la saisie manuelle sans vérif Sirene → risque d'erreurs silencieuses sur toute la chaîne fiscale (TVA, liasse, relations marketplaces).
+- Imposer Sirene sans édition possible → bloquant pour entreprises en diffusion partielle ou avec champs INSEE retardés.
+
+**Références** : validation visuelle Samaxan par Sam, payload Sirene test réel via `pg_net` le 2026-04-20.
+
+---
+
+## D016 — Mapping `nature_juridique` INSEE → `legal_form` Paperasse
+
+**Date** : 2026-04-20  
+**Contexte** : INSEE utilise un code numérique 4 chiffres pour la nature juridique (ex. 5710 = SAS, 5499 = SARL). Paperasse utilise un vocabulaire canonique en libellés (SAS, SASU, SARL, EURL, SA, SCI, SNC, SELARL, SCP, AUTRE). Il faut une table de correspondance maintenue en deux endroits (SQL + TS Edge Function).
+
+**Décision** : Le mapping est centralisé dans `compta.fn_map_nature_juridique(p_code text) RETURNS text` côté SQL et **dupliqué à l'identique** dans la fonction `mapNatureJuridique()` de l'Edge Function `compta-sirene-lookup` (TypeScript). Tout code INSEE non listé retourne `'AUTRE'`. La liste v1 couvre les formes les plus fréquentes des PME françaises :
+
+| Code INSEE | legal_form Paperasse |
+|---|---|
+| 5710 | SAS |
+| 5720, 5488 | SASU |
+| 5498 | EURL |
+| 5499, 5410, 5422 | SARL |
+| 5306, 5307, 5308 | SA |
+| 6540 | SCI |
+| 5202 | SNC |
+| 6585 | SELARL |
+| 6588 | SCP |
+| autres | AUTRE |
+
+**Alternatives rejetées** :
+- Table SQL `nature_juridique_map` seedable → surcoût (table + RLS + CRUD admin) pour gain nul en v1 ; switch possible v2 si besoin d'extensibilité dynamique.
+- Mapping unique côté SQL avec RPC appelée depuis TS → latence supplémentaire de 50-100ms à chaque lookup, sans valeur ajoutée (la table INSEE évolue ~1x/an).
+
+**Risques** :
+- Dérive entre SQL et TS si l'un des deux est modifié sans l'autre → mitigation : tout ajout de code INSEE doit passer par une migration SQL + mise à jour de l'Edge Function, tracée dans un nouvel ADR.
+
+**Références** : `supabase/migrations/20260421_000001_onboarding_helpers.sql` (SQL) + `apps/api/supabase/functions/compta-sirene-lookup/index.ts` (TS).
+
+---
