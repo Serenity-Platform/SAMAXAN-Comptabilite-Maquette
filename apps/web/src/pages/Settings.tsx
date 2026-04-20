@@ -65,6 +65,7 @@ function SettingsItem({
     <button
       onClick={onClick}
       style={{
+        position: "relative",
         display: "flex",
         alignItems: "center",
         gap: 14,
@@ -75,6 +76,7 @@ function SettingsItem({
         cursor: "pointer",
         textAlign: "left",
         transition: "border-color 0.12s, background 0.12s",
+        overflow: "hidden",
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = theme.color.primary;
@@ -85,6 +87,17 @@ function SettingsItem({
         e.currentTarget.style.background = theme.color.bg;
       }}
     >
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          left: 0,
+          width: 3,
+          background: theme.gradient.serenityHorizontal,
+        }}
+      />
       <div
         style={{
           width: 40,

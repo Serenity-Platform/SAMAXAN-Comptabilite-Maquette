@@ -390,13 +390,26 @@ function FormCard({
   return (
     <div
       style={{
+        position: "relative",
         background: theme.color.bg,
         border: `1px solid ${theme.color.border}`,
         borderRadius: theme.radius.md,
         padding: 20,
         marginBottom: 16,
+        overflow: "hidden",
       }}
     >
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: theme.accent.topBorderHeight,
+          background: theme.gradient.serenityHorizontal,
+        }}
+      />
       <div style={{ marginBottom: 16 }}>
         <h2
           style={{

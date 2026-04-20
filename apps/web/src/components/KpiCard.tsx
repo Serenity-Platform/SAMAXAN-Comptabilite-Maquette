@@ -14,6 +14,7 @@ export function KpiCard({ label, value, hint, icon, tone = "default" }: Props) {
   return (
     <div
       style={{
+        position: "relative",
         background: tone === "soft" ? theme.color.bgSoft : theme.color.bg,
         border: `1px solid ${theme.color.border}`,
         borderRadius: theme.radius.md,
@@ -22,8 +23,20 @@ export function KpiCard({ label, value, hint, icon, tone = "default" }: Props) {
         flexDirection: "column",
         gap: 6,
         minWidth: 0,
+        overflow: "hidden",
       }}
     >
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: theme.accent.topBorderHeight,
+          background: theme.gradient.serenityHorizontal,
+        }}
+      />
       <div
         style={{
           display: "flex",

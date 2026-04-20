@@ -28,9 +28,24 @@ export function PageHeader({ title, subtitle, actions }: Props) {
             color: theme.color.text,
             margin: 0,
             letterSpacing: -0.2,
+            position: "relative",
+            display: "inline-block",
+            paddingBottom: 8,
           }}
         >
           {title}
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              width: 32,
+              height: 2,
+              background: theme.gradient.serenityHorizontal,
+              borderRadius: 2,
+            }}
+          />
         </h1>
         {subtitle && (
           <p

@@ -37,4 +37,14 @@ export const theme = {
     xxl: 28,
     hero: 36,
   },
+  gradient: {
+    // Liseré Serenity violet -> fuchsia (pour top borders des cartes)
+    serenityHorizontal: "linear-gradient(90deg, #431E96 0%, #A202C7 100%)",
+    // Version plus douce pour fonds (usage ponctuel)
+    serenitySoft: "linear-gradient(135deg, #431E9608 0%, #A202C710 100%)",
+  },
+  accent: {
+    // Épaisseur du liseré supérieur sur les cartes
+    topBorderHeight: 2,
+  },
 } as const;

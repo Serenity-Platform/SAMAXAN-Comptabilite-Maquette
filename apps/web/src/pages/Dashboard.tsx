@@ -336,6 +336,7 @@ function UpcomingCard({
   return (
     <div
       style={{
+        position: "relative",
         background: theme.color.bg,
         border: `1px solid ${theme.color.border}`,
         borderRadius: theme.radius.md,
@@ -343,8 +344,22 @@ function UpcomingCard({
         display: "flex",
         flexDirection: "column",
         gap: 8,
+        overflow: "hidden",
+        transition: "border-color 0.12s, transform 0.12s",
       }}
     >
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: theme.accent.topBorderHeight,
+          background: theme.gradient.serenityHorizontal,
+          opacity: 0.6,
+        }}
+      />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ color: theme.color.primary, display: "flex" }}>
           <Icon size={18} />
