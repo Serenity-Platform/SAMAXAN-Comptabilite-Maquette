@@ -67,7 +67,7 @@ export default function App() {
   }
 
   if (route === "login") {
-    return <Login onBack={() => goTo("home")} />;
+    return <Login onBack={() => goTo("home")} onSignedIn={() => goTo("dashboard")} />;
   }
 
   if (route === "onboarding" && session.status === "authenticated") {

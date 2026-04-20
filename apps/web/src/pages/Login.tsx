@@ -1,19 +1,22 @@
-// Paperasse — Page Login par magic link Supabase
+// Paperasse — Page Login par email + password Supabase
+// Volontairement SANS magic link pour éviter la dépendance aux redirect URLs
+// de la config auth Supabase (partagée avec app-serenity.com).
 import { useState } from "react";
 import { theme } from "../lib/theme";
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { getSupabase } from "../lib/supabaseClient";
-import { config } from "../lib/config";
 
 type Props = {
   onBack: () => void;
+  onSignedIn: () => void;
 };
 
-export function Login({ onBack }: Props) {
+export function Login({ onBack, onSignedIn }: Props) {
   const [email, setEmail] = useState("");
-  const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [password, setPassword] = useState("");
+  const [state, setState] = useState<"idle" | "signing_in" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSubmit = async () => {
@@ -22,26 +25,34 @@ export function Login({ onBack }: Props) {
       setState("error");
       return;
     }
-    setState("sending");
+    if (!password) {
+      setErrorMsg("Mot de passe requis");
+      setState("error");
+      return;
+    }
+    setState("signing_in");
     setErrorMsg(null);
     try {
       const supabase = getSupabase();
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
-        options: {
-          emailRedirectTo: config.authRedirect,
-          shouldCreateUser: false, // évite création de users surprises depuis l'interface
-        },
+        password,
       });
       if (error) {
         setErrorMsg(error.message);
         setState("error");
       } else {
-        setState("sent");
+        onSignedIn();
       }
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : String(err));
       setState("error");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSubmit();
     }
   };
 
@@ -84,59 +95,53 @@ export function Login({ onBack }: Props) {
           Connexion
         </h1>
         <p style={{ fontSize: theme.fontSize.base, color: theme.color.textMuted, margin: "0 0 24px", lineHeight: 1.5 }}>
-          Recevez un lien de connexion par email. Le lien expire après 1 heure.
+          Utilisez votre email et mot de passe Serenity.
         </p>
 
-        {state === "sent" ? (
-          <div
-            style={{
-              padding: 16,
-              background: "#ecfdf5",
-              border: "1px solid #10b98155",
-              borderRadius: theme.radius.md,
-              fontSize: theme.fontSize.base,
-              color: "#065f46",
-              lineHeight: 1.6,
-            }}
+        <div onKeyDown={handleKeyDown} style={{ display: "grid", gap: 16 }}>
+          <Input
+            label="Email"
+            type="email"
+            placeholder="samgraphiste@gmail.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={state === "signing_in"}
+            autoComplete="email"
+            autoFocus
+          />
+
+          <Input
+            label="Mot de passe"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={state === "signing_in"}
+            autoComplete="current-password"
+            error={state === "error" ? errorMsg ?? undefined : undefined}
+          />
+        </div>
+
+        <div style={{ marginTop: 20 }}>
+          <Button
+            onClick={handleSubmit}
+            disabled={state === "signing_in" || !email || !password}
+            style={{ width: "100%" }}
           >
-            <strong>Email envoyé à {email}.</strong>
-            <br />
-            Cliquez sur le lien reçu pour vous connecter. Cette page se rafraîchira automatiquement
-            dès que la session sera établie.
-          </div>
-        ) : (
-          <>
-            <Input
-              label="Email"
-              type="email"
-              placeholder="samgraphiste@gmail.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={state === "sending"}
-              error={state === "error" ? errorMsg ?? undefined : undefined}
-            />
-            <div style={{ marginTop: 20 }}>
-              <Button
-                onClick={handleSubmit}
-                disabled={state === "sending" || !email}
-                style={{ width: "100%" }}
-              >
-                {state === "sending" ? "Envoi…" : "Recevoir le lien de connexion"}
-              </Button>
-            </div>
-            <p
-              style={{
-                fontSize: theme.fontSize.xs,
-                color: theme.color.textSoft,
-                marginTop: 16,
-                lineHeight: 1.5,
-              }}
-            >
-              Seuls les utilisateurs Serenity existants peuvent se connecter. Aucun nouveau compte
-              n'est créé automatiquement.
-            </p>
-          </>
-        )}
+            {state === "signing_in" ? "Connexion…" : "Se connecter"}
+          </Button>
+        </div>
+
+        <p
+          style={{
+            fontSize: theme.fontSize.xs,
+            color: theme.color.textSoft,
+            marginTop: 16,
+            lineHeight: 1.5,
+          }}
+        >
+          Utilisez le même couple email/mot de passe que sur app-serenity.com.
+          Aucun redirect, aucun email envoyé.
+        </p>
       </Card>
     </div>
   );
