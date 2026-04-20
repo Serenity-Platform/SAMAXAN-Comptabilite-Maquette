@@ -30,7 +30,9 @@ const APP_ROUTES: NavRoute[] = [
 ];
 
 function parseRoute(hash: string): Route {
-  const h = hash.replace(/^#/, "");
+  // Retirer le '#' initial et tout ?query... éventuel (ex: OAuth callbacks)
+  const raw = hash.replace(/^#/, "");
+  const h = raw.split("?")[0];
   if (h === "login") return "login";
   if (h === "onboarding") return "onboarding";
   if ((APP_ROUTES as string[]).includes(h)) return h as NavRoute;
