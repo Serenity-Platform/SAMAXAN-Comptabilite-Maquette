@@ -160,7 +160,18 @@ function canProceed(step: number, state: OnboardingState): boolean {
       !!state.address.city
     );
   }
-  if (step === 2) return !!state.regime_tva && !!state.regime_is && !!state.fiscal_year_start && !!state.fiscal_year_end;
+  if (step === 2) {
+    if (!state.regime_tva || !state.regime_is) return false;
+    if (!state.fiscal_year_start || !state.fiscal_year_end) return false;
+    // Validation cohérence exercice comptable
+    const start = new Date(state.fiscal_year_start);
+    const end = new Date(state.fiscal_year_end);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+    if (end <= start) return false;
+    const days = Math.round((end.getTime() - start.getTime()) / 86400000);
+    if (days < 30 || days > 730) return false; // min 1 mois, max 2 ans
+    return true;
+  }
   if (step === 3) return !!state.invoicing_prefix && !!state.invoicing_avoir_prefix && state.invoicing_next_number > 0;
   if (step === 4) return true; // équipe optionnelle
   if (step === 5) return true; // serenity optionnel
@@ -431,7 +442,56 @@ function Step2Fiscal({ state, update }: StepProps) {
             hint="Par défaut : 31 décembre"
           />
         </div>
+
+        <FiscalDurationHint state={state} update={update} />
       </div>
+    </div>
+  );
+}
+
+function FiscalDurationHint({ state, update }: StepProps) {
+  const year = new Date().getFullYear();
+  const duration = fiscalYearDurationLabel(state.fiscal_year_start, state.fiscal_year_end);
+  const isDefault = state.fiscal_year_start === `${year}-01-01` && state.fiscal_year_end === `${year}-12-31`;
+  return (
+    <div
+      style={{
+        padding: 12,
+        borderRadius: theme.radius.md,
+        background: duration.tone === "ok" ? theme.color.bgSoft : "#fef3c7",
+        border: `1px solid ${duration.tone === "ok" ? theme.color.border : "#fbbf24"}`,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 12,
+        fontSize: theme.fontSize.sm,
+      }}
+    >
+      <div>
+        <strong style={{ color: theme.color.text }}>Durée de l'exercice :</strong>{" "}
+        <span style={{ color: duration.tone === "ok" ? theme.color.textMuted : "#92400e" }}>
+          {duration.text}
+        </span>
+      </div>
+      {!isDefault && (
+        <button
+          onClick={() => {
+            update("fiscal_year_start", `${year}-01-01`);
+            update("fiscal_year_end", `${year}-12-31`);
+          }}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: theme.color.primary,
+            cursor: "pointer",
+            fontSize: theme.fontSize.sm,
+            fontWeight: 600,
+            textDecoration: "underline",
+          }}
+        >
+          Remettre à {year}
+        </button>
+      )}
     </div>
   );
 }
@@ -844,6 +904,19 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
       <span style={{ color: theme.color.text, fontWeight: 500, textAlign: "right" }}>{value}</span>
     </div>
   );
+}
+
+function fiscalYearDurationLabel(start: string, end: string): { text: string; tone: "ok" | "warn" } {
+  if (!start || !end) return { text: "—", tone: "warn" };
+  const s = new Date(start);
+  const e = new Date(end);
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) return { text: "Dates invalides", tone: "warn" };
+  if (e <= s) return { text: "La fin doit être après le début", tone: "warn" };
+  const days = Math.round((e.getTime() - s.getTime()) / 86400000) + 1;
+  const months = Math.round(days / 30.4);
+  if (months < 6) return { text: `${days} jours (${months} mois) — exercice court`, tone: "warn" };
+  if (months > 24) return { text: `${days} jours (${months} mois) — exercice exceptionnellement long`, tone: "warn" };
+  return { text: `${days} jours (~${months} mois)`, tone: "ok" };
 }
 
 function warningLabel(code: string): string {
