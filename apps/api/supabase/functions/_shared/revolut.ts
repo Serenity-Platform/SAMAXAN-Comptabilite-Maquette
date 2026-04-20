@@ -88,19 +88,26 @@ function wrapPkcs1AsPkcs8(pkcs1: Uint8Array): Uint8Array {
 }
 
 /**
- * Signe un JWT client_assertion pour Revolut
- * iss = clientId, sub = clientId, aud = 'https://revolut.com', jti = random, exp = +10min
+ * Signe un JWT client_assertion pour Revolut.
+ * Selon la doc Revolut:
+ *   iss = ton domaine SANS 'https://' (ex: 'wtvnepynwrvvpugmdacd.supabase.co')
+ *   sub = ton client_id
+ *   aud = 'https://revolut.com'
+ *   jti = random
+ *   exp = +10min
+ * Le domaine 'iss' doit correspondre au domaine du redirect_uri declare chez Revolut.
  */
 export async function signClientAssertion(params: {
   clientId: string;
   privateKeyPem: string;
+  issuerDomain: string;
 }): Promise<string> {
   const key = await importPrivateKey(params.privateKeyPem);
   const jti = crypto.randomUUID();
   return await create(
     { alg: "RS256", typ: "JWT" },
     {
-      iss: params.clientId,
+      iss: params.issuerDomain,
       sub: params.clientId,
       aud: "https://revolut.com",
       jti,
@@ -110,10 +117,17 @@ export async function signClientAssertion(params: {
   );
 }
 
+/** Extrait le domaine 'iss' depuis le redirect_uri (sans protocole ni path). */
+export function issuerDomainFromRedirectUri(redirectUri: string): string {
+  const u = new URL(redirectUri);
+  return u.hostname;
+}
+
 /** Échange un code OAuth contre un access_token + refresh_token */
 export async function exchangeCodeForTokens(params: {
   clientId: string;
   privateKeyPem: string;
+  issuerDomain: string;
   code: string;
 }): Promise<{
   access_token: string;
@@ -124,6 +138,7 @@ export async function exchangeCodeForTokens(params: {
   const assertion = await signClientAssertion({
     clientId: params.clientId,
     privateKeyPem: params.privateKeyPem,
+    issuerDomain: params.issuerDomain,
   });
 
   const body = new URLSearchParams({
@@ -149,6 +164,7 @@ export async function exchangeCodeForTokens(params: {
 export async function refreshAccessToken(params: {
   clientId: string;
   privateKeyPem: string;
+  issuerDomain: string;
   refreshToken: string;
 }): Promise<{
   access_token: string;
@@ -158,6 +174,7 @@ export async function refreshAccessToken(params: {
   const assertion = await signClientAssertion({
     clientId: params.clientId,
     privateKeyPem: params.privateKeyPem,
+    issuerDomain: params.issuerDomain,
   });
 
   const body = new URLSearchParams({
