@@ -27,6 +27,7 @@ const APP_ROUTES: NavRoute[] = [
   "documents",
   "settings",
   "settings-company",
+  "settings-integrations",
 ];
 
 function parseRoute(hash: string): Route {
