@@ -3,7 +3,7 @@ import { config } from "./config";
 import type { SireneApiResponse } from "./types";
 
 export async function lookupSirene(siren: string): Promise<SireneApiResponse> {
-  const url = `${config.sireneEndpoint}?siren=${encodeURIComponent(siren)}`;
+  const url = `${config.endpoints.sireneLookup}?siren=${encodeURIComponent(siren)}`;
   try {
     const resp = await fetch(url, {
       headers: { Accept: "application/json" },

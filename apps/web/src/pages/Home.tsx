@@ -4,9 +4,14 @@ import { Button } from "../components/Button";
 
 type Props = {
   onStartOnboarding: () => void;
+  onOpenDashboard?: () => void;
+  onSignIn?: () => void;
+  userEmail?: string | null;
 };
 
-export function Home({ onStartOnboarding }: Props) {
+export function Home({ onStartOnboarding, onOpenDashboard, onSignIn, userEmail }: Props) {
+  const isAuthed = !!onOpenDashboard;
+
   return (
     <div
       style={{
@@ -21,19 +26,51 @@ export function Home({ onStartOnboarding }: Props) {
       <Card style={{ maxWidth: 720, width: "100%" }}>
         <div
           style={{
-            display: "inline-block",
-            fontSize: theme.fontSize.xs,
-            fontWeight: 600,
-            letterSpacing: 1.2,
-            textTransform: "uppercase",
-            color: theme.color.accent,
-            padding: "4px 10px",
-            borderRadius: theme.radius.pill,
-            background: theme.color.bgTint,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
             marginBottom: 16,
+            gap: 12,
           }}
         >
-          Lot 1.1 & 1.2 — Onboarding Paperasse
+          <div
+            style={{
+              fontSize: theme.fontSize.xs,
+              fontWeight: 600,
+              letterSpacing: 1.2,
+              textTransform: "uppercase",
+              color: theme.color.accent,
+              padding: "4px 10px",
+              borderRadius: theme.radius.pill,
+              background: theme.color.bgTint,
+            }}
+          >
+            Lot 1.3 — Onboarding auth + DB
+          </div>
+
+          {isAuthed ? (
+            <div style={{ fontSize: theme.fontSize.xs, color: theme.color.textSoft, textAlign: "right" }}>
+              Connecté
+              <br />
+              <strong style={{ color: theme.color.text }}>{userEmail ?? "—"}</strong>
+            </div>
+          ) : onSignIn ? (
+            <button
+              onClick={onSignIn}
+              style={{
+                background: "transparent",
+                border: `1px solid ${theme.color.border}`,
+                color: theme.color.text,
+                fontSize: theme.fontSize.sm,
+                fontWeight: 600,
+                padding: "6px 12px",
+                borderRadius: theme.radius.md,
+                cursor: "pointer",
+              }}
+            >
+              Se connecter
+            </button>
+          ) : null}
         </div>
 
         <h1
@@ -51,7 +88,7 @@ export function Home({ onStartOnboarding }: Props) {
         <p style={{ fontSize: theme.fontSize.md, color: theme.color.textMuted, lineHeight: 1.6, margin: "0 0 28px" }}>
           Module de comptabilité française intégré à Serenity.
           <br />
-          Lot 1.1 : Edge Function Sirene déployée et testée. Lot 1.2 : flux onboarding 6 étapes.
+          Connectez-vous et créez votre tenant comptable en 6 étapes guidées.
         </p>
 
         <div
@@ -69,10 +106,21 @@ export function Home({ onStartOnboarding }: Props) {
         </div>
 
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-          <Button onClick={onStartOnboarding}>Démarrer l'onboarding Samaxan</Button>
-          <span style={{ fontSize: theme.fontSize.sm, color: theme.color.textSoft }}>
-            Testable avec SIREN 851264606 (Samaxan) ou tout autre SIREN français.
-          </span>
+          {isAuthed ? (
+            <>
+              <Button onClick={onOpenDashboard}>Mon dashboard</Button>
+              <Button variant="secondary" onClick={onStartOnboarding}>
+                Créer une société
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button onClick={onStartOnboarding}>Démarrer l'onboarding</Button>
+              <span style={{ fontSize: theme.fontSize.sm, color: theme.color.textSoft }}>
+                Connexion requise. Testable avec SIREN 851264606 (Samaxan).
+              </span>
+            </>
+          )}
         </div>
 
         <div
@@ -85,21 +133,19 @@ export function Home({ onStartOnboarding }: Props) {
             lineHeight: 1.7,
           }}
         >
-          <strong style={{ color: theme.color.text }}>Documentation :</strong>{" "}
+          <strong style={{ color: theme.color.text }}>Edge Functions :</strong>{" "}
           <code style={{ background: theme.color.borderSoft, padding: "2px 6px", borderRadius: 4 }}>
-            docs/project-state/
+            compta-sirene-lookup
+          </code>{" "}
+          ·{" "}
+          <code style={{ background: theme.color.borderSoft, padding: "2px 6px", borderRadius: 4 }}>
+            compta-onboarding-submit
           </code>
           <br />
           <strong style={{ color: theme.color.text }}>Migrations :</strong>{" "}
           <code style={{ background: theme.color.borderSoft, padding: "2px 6px", borderRadius: 4 }}>
-            supabase/migrations/20260420_000001..22 + 20260421_000001
+            20260420_000001..22 · 20260421_000001..02
           </code>
-          <br />
-          <strong style={{ color: theme.color.text }}>Edge Function :</strong>{" "}
-          <code style={{ background: theme.color.borderSoft, padding: "2px 6px", borderRadius: 4 }}>
-            compta-sirene-lookup
-          </code>{" "}
-          (déployée ✓)
         </div>
       </Card>
 

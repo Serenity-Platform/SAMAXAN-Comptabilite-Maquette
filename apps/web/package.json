@@ -1,6 +1,6 @@
 {
   "name": "@paperasse/web",
-  "version": "0.1.0-lot0",
+  "version": "0.3.0-lot1.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "@supabase/supabase-js": "^2.45.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",

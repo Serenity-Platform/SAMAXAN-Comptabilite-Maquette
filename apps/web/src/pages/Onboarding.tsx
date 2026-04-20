@@ -6,6 +6,7 @@ import { Input } from "../components/Input";
 import { Select } from "../components/Select";
 import { Stepper } from "../components/Stepper";
 import { lookupSirene } from "../lib/sireneApi";
+import { submitOnboarding, type OnboardingSuccessData } from "../lib/onboardingApi";
 import type {
   LegalForm,
   OnboardingState,
@@ -26,12 +27,16 @@ const STEPS = [
 
 type Props = {
   onExit: () => void;
+  onComplete: (result: OnboardingSuccessData) => void;
 };
 
-export function Onboarding({ onExit }: Props) {
+export function Onboarding({ onExit, onComplete }: Props) {
   const [step, setStep] = useState(1);
   const [state, setState] = useState<OnboardingState>(DEFAULT_ONBOARDING_STATE);
   const [submitted, setSubmitted] = useState<null | OnboardingState>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitResult, setSubmitResult] = useState<OnboardingSuccessData | null>(null);
 
   const update = <K extends keyof OnboardingState>(key: K, value: OnboardingState[K]) => {
     setState((prev) => ({ ...prev, [key]: value }));
@@ -100,8 +105,8 @@ export function Onboarding({ onExit }: Props) {
 
         <Stepper current={step} steps={STEPS} />
 
-        {submitted ? (
-          <SubmittedPreview state={submitted} onRestart={() => { setSubmitted(null); setStep(1); setState(DEFAULT_ONBOARDING_STATE); }} />
+        {submitted && submitResult ? (
+          <SubmittedSuccess result={submitResult} onContinue={() => onComplete(submitResult)} />
         ) : (
           <>
             {step === 1 && <Step1Identity state={state} update={update} />}
@@ -110,6 +115,22 @@ export function Onboarding({ onExit }: Props) {
             {step === 4 && <Step4Team state={state} update={update} />}
             {step === 5 && <Step5Serenity state={state} update={update} />}
             {step === 6 && <Step6Confirm state={state} />}
+
+            {submitError && (
+              <div
+                style={{
+                  marginTop: 20,
+                  padding: 14,
+                  background: "#fef2f2",
+                  border: "1px solid #dc262655",
+                  borderRadius: theme.radius.md,
+                  fontSize: theme.fontSize.sm,
+                  color: "#991b1b",
+                }}
+              >
+                <strong>Erreur à la création :</strong> {submitError}
+              </div>
+            )}
 
             <div
               style={{
@@ -133,8 +154,24 @@ export function Onboarding({ onExit }: Props) {
                   Suivant
                 </Button>
               ) : (
-                <Button onClick={() => setSubmitted(state)}>
-                  Créer ma société
+                <Button
+                  onClick={async () => {
+                    setSubmitting(true);
+                    setSubmitError(null);
+                    const result = await submitOnboarding(state);
+                    setSubmitting(false);
+                    if (result.ok) {
+                      setSubmitResult(result.data);
+                      setSubmitted(state);
+                      // Notifier le parent au bout de 2s (laisse le temps de voir le succès)
+                      setTimeout(() => onComplete(result.data), 2500);
+                    } else {
+                      setSubmitError(result.message ?? result.error);
+                    }
+                  }}
+                  disabled={submitting}
+                >
+                  {submitting ? "Création…" : "Créer ma société"}
                 </Button>
               )}
             </div>
@@ -766,80 +803,98 @@ function Step6Confirm({ state }: { state: OnboardingState }) {
   );
 }
 
-// ===================== SUBMITTED PREVIEW ===============================================
+// ===================== SUBMITTED SUCCESS ===============================================
 
-function SubmittedPreview({ state, onRestart }: { state: OnboardingState; onRestart: () => void }) {
-  const rpcPayload = {
-    p_user_id: state.serenity_user_id ?? "(user connecté au Lot 1.3)",
-    p_tenant_name: state.name,
-    p_legal_entity_payload: {
-      name: state.name,
-      legal_form: state.legal_form,
-      siren: state.siren,
-      siret: state.siret,
-      rcs: state.rcs || null,
-      naf: state.naf,
-      capital_amount: state.capital_amount,
-      address: state.address,
-      president: state.president,
-      regime_tva: state.regime_tva,
-      regime_is: state.regime_is,
-      invoicing_config: {
-        prefix: state.invoicing_prefix,
-        avoir_prefix: state.invoicing_avoir_prefix,
-        separator: "-",
-        year_format: "YYYY",
-        next_numbers: { [new Date().getFullYear()]: state.invoicing_next_number },
-      },
-      serenity_user_id: state.serenity_user_id,
-    },
-    p_fiscal_year_start: state.fiscal_year_start,
-    p_fiscal_year_end: state.fiscal_year_end,
-  };
-
+function SubmittedSuccess({
+  result,
+  onContinue,
+}: {
+  result: OnboardingSuccessData;
+  onContinue: () => void;
+}) {
   return (
     <div>
       <div
         style={{
-          padding: 20,
+          padding: 24,
           background: "#ecfdf5",
           border: "1px solid #10b98155",
           borderRadius: theme.radius.md,
-          marginBottom: 20,
+          marginBottom: 24,
+          textAlign: "center",
         }}
       >
-        <h2 style={{ fontSize: theme.fontSize.lg, fontWeight: 700, color: "#065f46", margin: "0 0 8px" }}>
-          Payload prêt
+        <div style={{ fontSize: 48, marginBottom: 12 }}>✓</div>
+        <h2 style={{ fontSize: theme.fontSize.xl, fontWeight: 700, color: "#065f46", margin: "0 0 8px" }}>
+          Société créée
         </h2>
-        <p style={{ fontSize: theme.fontSize.sm, color: "#047857", margin: 0, lineHeight: 1.6 }}>
-          Le flux onboarding fonctionne de bout en bout. Le payload JSON ci-dessous sera envoyé
-          à la fonction SQL <code>compta.fn_create_tenant_with_legal_entity</code> dès que le Lot 1.3
-          (auth JWT + Edge Function de submit) sera livré.
+        <p style={{ fontSize: theme.fontSize.base, color: "#047857", margin: 0, lineHeight: 1.6 }}>
+          Votre tenant comptable est initialisé avec {result.journals_count} journaux et{" "}
+          {result.periods_count} périodes mensuelles.
         </p>
       </div>
 
       <div
         style={{
-          background: "#0f172a",
-          color: "#e2e8f0",
-          padding: 16,
+          border: `1px solid ${theme.color.border}`,
           borderRadius: theme.radius.md,
-          fontSize: theme.fontSize.sm,
-          fontFamily: "Menlo, Monaco, monospace",
-          overflowX: "auto",
-          lineHeight: 1.5,
+          background: theme.color.bgSoft,
+          overflow: "hidden",
+          marginBottom: 20,
         }}
       >
-        <pre style={{ margin: 0 }}>
-{JSON.stringify(rpcPayload, null, 2)}
-        </pre>
+        <SuccessRow label="tenant_id" value={result.tenant_id} mono />
+        <SuccessRow label="legal_entity_id" value={result.legal_entity_id} mono />
+        <SuccessRow label="fiscal_year_id" value={result.fiscal_year_id} mono />
+        <SuccessRow label="Exercice" value={`${result.fiscal_year_start} → ${result.fiscal_year_end}`} />
+        <SuccessRow label="Journaux seedés" value={String(result.journals_count)} />
+        <SuccessRow label="Périodes mensuelles" value={String(result.periods_count)} last />
       </div>
 
-      <div style={{ marginTop: 20, display: "flex", gap: 12, justifyContent: "flex-end" }}>
-        <Button variant="secondary" onClick={onRestart}>
-          Recommencer
-        </Button>
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <Button onClick={onContinue}>Accéder à mon dashboard</Button>
       </div>
+
+      <p
+        style={{
+          marginTop: 16,
+          fontSize: theme.fontSize.xs,
+          color: theme.color.textSoft,
+          textAlign: "center",
+        }}
+      >
+        Redirection automatique dans 2 secondes…
+      </p>
+    </div>
+  );
+}
+
+function SuccessRow({ label, value, mono, last }: { label: string; value: string; mono?: boolean; last?: boolean }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "10px 14px",
+        fontSize: theme.fontSize.sm,
+        borderBottom: last ? "none" : `1px solid ${theme.color.borderSoft}`,
+        gap: 12,
+      }}
+    >
+      <span style={{ color: theme.color.textSoft }}>{label}</span>
+      <span
+        style={{
+          color: theme.color.text,
+          fontWeight: 500,
+          textAlign: "right",
+          fontFamily: mono ? "Menlo, Monaco, monospace" : undefined,
+          fontSize: mono ? theme.fontSize.xs : theme.fontSize.sm,
+          wordBreak: "break-all",
+        }}
+      >
+        {value}
+      </span>
     </div>
   );
 }
