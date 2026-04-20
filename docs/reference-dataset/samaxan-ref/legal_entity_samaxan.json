@@ -1,0 +1,58 @@
+{
+  "_comment": "Data Samaxan saisie par Sam le 2026-04-19 11:33 UTC, récupérée depuis public.compta_companies (row orpheline preservée D013). Source de vérité pour la migration onboarding Lot 1. Divergences Sirene signalées en _sirene_corrections.",
+  "source": {
+    "table": "public.compta_companies",
+    "id": "fad202d3-8f17-45ef-bc3d-c83b25546b89",
+    "captured_at": "2026-04-19T11:33:59.0817+00:00",
+    "extracted_for_lot1_migration_at": "2026-04-20T09:15:00Z"
+  },
+  "name": "SAMAXAN",
+  "legal_form": "SAS",
+  "siren": "851264606",
+  "siret": "85126460600027",
+  "serenity_user_id": "643f7b04-549e-415b-a9d1-1e2c610c16bb",
+  "rcs": "Melun",
+  "address": {
+    "line1": "12 RUE DU PRÉ DES AULNES",
+    "postal_code": "77340",
+    "city": "PONTAULT-COMBAULT",
+    "country": "FR"
+  },
+  "president": {
+    "name": "Samy HERZI",
+    "role": "Président"
+  },
+  "naf_saisie": "6201Z",
+  "_sirene_corrections": {
+    "naf_sirene": "47.91B",
+    "note_legal_form": "Sirene code 5710 = SAS (confirme la saisie). Les instructions Project mentionnant 'SASU' sont erronées.",
+    "note_naf": "Instructions Project disent NAF 47.91B (Sirene). Saisie Sam dit 6201Z (Programmation informatique). Migration Lot 1 = Sirene fait foi, à confirmer avec Sam au moment de la migration."
+  },
+  "capital_amount": 1000,
+  "capital_currency": "EUR",
+  "regime_tva": "franchise",
+  "regime_is": "reel_simplifie",
+  "fiscal_year_start_day": 1,
+  "fiscal_year_start_month": 1,
+  "fiscal_year_end_day": 31,
+  "fiscal_year_end_month": 12,
+  "invoicing_config": {
+    "prefix": "F",
+    "separator": "-",
+    "year_format": "YYYY",
+    "avoir_prefix": "AV",
+    "next_numbers": {
+      "2026": 1
+    },
+    "examples": {
+      "facture_premiere_2026": "F-2026-0001",
+      "avoir_premier_2026": "AV-2026-0001"
+    }
+  },
+  "payment_config": {
+    "default_terms": "net_30",
+    "late_penalty_rate": "3x_legal",
+    "recovery_fee": 40,
+    "escompte": "none"
+  }
+}

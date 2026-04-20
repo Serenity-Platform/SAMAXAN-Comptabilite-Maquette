@@ -1,4 +1,39 @@
+# Dependencies
 node_modules/
-.DS_Store
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.output/
+.vite/
+
+# Netlify
+.netlify/
+
+# Env
 .env
-.netlify
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# Deno
+.deno/
