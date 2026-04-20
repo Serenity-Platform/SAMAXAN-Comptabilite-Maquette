@@ -1,9 +1,18 @@
 {
-  "name": "samaxan-comptabilite",
-  "version": "1.0.0",
-  "type": "module",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "node-fetch": "^3.3.2"
+  "name": "paperasse",
+  "version": "0.1.0-lot0",
+  "private": true,
+  "description": "Paperasse — Module comptabilité française intégré à Serenity",
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspace=apps/web",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

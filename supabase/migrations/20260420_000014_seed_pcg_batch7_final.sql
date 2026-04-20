@@ -1,0 +1,23 @@
+INSERT INTO compta.pcg_accounts (number, label, system, parent) VALUES
+('68173', 'Stocks et en-cours', 'facultatif', '6817'),
+('68174', 'Créances', 'facultatif', '6817'),
+('68662', 'Immobilisations financières', 'facultatif', '6866'),
+('68665', 'Valeurs mobilières de placement', 'facultatif', '6866'),
+('68725', 'Amortissements dérogatoires', 'facultatif', '6872'),
+('71331', 'Produits en cours', 'facultatif', '7133'),
+('71335', 'Travaux en cours', 'facultatif', '7133'),
+('71341', 'Études en cours', 'facultatif', '7134'),
+('71345', 'Prestations de services en cours', 'facultatif', '7134'),
+('71351', 'Produits intermédiaires', 'facultatif', '7135'),
+('71355', 'Produits finis', 'facultatif', '7135'),
+('71358', 'Produits résiduels', 'facultatif', '7135'),
+('78111', 'Immobilisations incorporelles', 'facultatif', '7811'),
+('78112', 'Immobilisations corporelles', 'facultatif', '7811'),
+('78161', 'Immobilisations incorporelles', 'facultatif', '7816'),
+('78162', 'Immobilisations corporelles', 'facultatif', '7816'),
+('78173', 'Stocks et en-cours', 'facultatif', '7817'),
+('78174', 'Créances', 'facultatif', '7817'),
+('78662', 'Immobilisations financières', 'facultatif', '7866'),
+('78665', 'Valeurs mobilières de placement', 'facultatif', '7866'),
+('78725', 'Amortissements dérogatoires', 'facultatif', '7872')
+ON CONFLICT (number) DO NOTHING;

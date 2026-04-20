@@ -1,71 +1,66 @@
-# SAMAXAN Comptabilité — Maquette Statique
+# Paperasse
 
-Maquette HTML premium pour le système de gestion comptable SAMAXAN.
+Module de comptabilité française intégré au SaaS [Serenity](https://app-serenity.com).
+Conforme PCG 2026, liasse 2033, CA3, FEC.
 
-## 🎨 Design System
+**Statut : Lot 0 (fondation DB) — en cours.**
 
-- **Palette** : Serenity (Violet #431E96, Accent #A202C7)
-- **Typographie** : Inter (Google Fonts)
-- **Inspiration UX** : Pennylane
-- **Graphs** : Recharts (CDN)
+## Architecture
 
-## 📁 Structure
+Monorepo npm workspaces :
 
 ```
-/
-├── index.html                  # Login
-├── dashboard.html              # Dashboard principal (KPI + graphs)
-├── onboarding-1.html          # Onboarding étape 1/5
-├── onboarding-2.html          # Onboarding étape 2/5
-├── onboarding-3.html          # Onboarding étape 3/5
-├── onboarding-4.html          # Onboarding étape 4/5
-├── onboarding-5.html          # Onboarding étape 5/5
-├── ecritures.html             # Écritures comptables
-├── banque.html                # Rapprochement bancaire
-├── factures.html              # Facturation
-├── liasse.html                # Liasse fiscale
-├── audit.html                 # Audit IA
-├── documents.html             # Archive documents
-├── societes.html              # Gestion multi-sociétés
-├── equipe.html                # Gestion utilisateurs
-├── audit-log.html             # Journal d'audit
-├── agent-compta.html          # Agent comptable IA
-└── assets/
-    ├── css/
-    │   └── style.css          # Design system complet
-    ├── js/
-    │   ├── navigation.js      # Routing client-side
-    │   ├── charts.js          # Graphs Recharts
-    │   └── agent.js           # Interface Agent IA
-    └── img/
-        ├── logo-samaxan.svg
-        └── logo-samaxan-baseline.svg
+paperasse/
+├── apps/web/                     Frontend React + Vite + TS
+├── apps/api/supabase/functions/  Edge Functions (Deno TS)
+├── packages/shared/              Types + utilitaires partagés
+├── supabase/migrations/          22 migrations Lot 0 (compta_*)
+├── docs/project-state/           Fichiers d'état du protocole
+├── docs/reference-dataset/       Dataset de référence Samaxan
+└── reference/mockup-v0/          Maquette HTML UX d'origine (archivée)
 ```
 
-## 🚀 Déploiement
+Stack :
+- Frontend : React 18 / Vite / TypeScript / Tailwind
+- Backend : Supabase Postgres 17 (schéma `compta` isolé) + Edge Functions Deno
+- Déploiement : Netlify (branch deploy + prod)
 
-**Netlify** : Auto-deploy depuis `main`
+Projet Supabase : `wtvnepynwrvvpugmdacd` (partagé avec Serenity V2 Dashboard, schéma séparé).
 
-**URL Preview** : https://samaxan-comptabilite-maquette.netlify.app
+## Lot 0 — Livré (socle DB)
 
-## 🔧 Développement
+- Schéma `compta` isolé (15 tables tenant-scoped + référentielles)
+- 838 comptes PCG 2026 · 52 cases liasse 2033 · 10 règles TVA v1 · 12 règles classification v1
+- Invariants DB : partie double stricte, immutabilité des écritures posted, propagation `locked` (D001), idempotence universelle (D004)
+- RLS sur 100% des tables via `compta.fn_user_has_access` (hiérarchie platform_admin > tenant_owner > accountant > viewer)
+- Bucket Storage `compta-documents` privé 20 Mo
+- 8/8 tests d'invariants adverses PASS
 
-Aucune compilation nécessaire, HTML/CSS/JS statiques.
+Voir :
+- `docs/project-state/ARCHITECTURE.md` — schéma DB, décisions, RLS, rollback
+- `docs/project-state/DECISIONS.md` — D001-D014 (statuts locked, rule_applications, post asynchrone, idempotence…)
+- `docs/project-state/ROADMAP.md` — 9 lots v1
+- `docs/project-state/SESSION_STATE.md` — avancement courant
+- `docs/project-state/REALITY_AUDIT.md` — audit honnête de l'existant
+- `docs/project-state/PROJECT_BRIEF.md` — objectif, périmètre, contraintes
+- `docs/project-state/UX_PRODUCT_BLUEPRINT.md` — personae, shell UI, règles UX
 
-Ouvrir `index.html` dans un navigateur moderne.
+## Maquette v0
 
-## 📝 Workflow validation
+La maquette HTML statique qui a servi à valider la direction UX est archivée sous
+`reference/mockup-v0/`. Elle n'est plus le produit — elle reste référence.
 
-1. ✅ Login page
-2. 🔄 Dashboard (en cours)
-3. ⏳ Onboarding 5 étapes
-4. ⏳ Pages métier (écritures, factures, etc.)
-5. ⏳ Interface Agent IA
+## Prochain jalon
 
-## 🎯 Next Steps
+**Lot 1** : onboarding Samaxan (création tenant + legal_entity via UI, seed journaux, migration `public.compta_companies`).
 
-Une fois maquette validée :
-- Migration HTML → React components
-- Connexion Supabase
-- Backend Edge Functions
-- Déploiement production `compta.samaxan.fr`
+## Conventions
+
+- Français pour UI, commentaires, docs. Anglais pour code, identifiants, schémas.
+- Commits descriptifs, pas de `wip` ni `fix typo` sans contexte.
+- Aucune écriture comptable créée sans trace règle appliquée (`rule_applications` jsonb).
+- Toute modification de lot produit une mise à jour de `docs/project-state/SESSION_STATE.md`.
+
+---
+
+© 2026 SAMAXAN · Paperasse — Module Serenity
